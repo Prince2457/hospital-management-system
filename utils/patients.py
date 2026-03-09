@@ -67,3 +67,63 @@ def create_patient(full_name, ghana_card_number, date_of_birth, gender,
         return False
     finally:
         close_connection(connection, cursor)
+
+def update_patient(patient_id, full_name, phone, email, address, region, 
+                blood_group, nhis_number, nhis_expiry, 
+                emergency_contact_name, emergency_contact_phone):
+    """Update an existing patient's details."""
+    connection = get_connection()
+
+    if not connection:
+        return False
+
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE patients SET
+                full_name = %s,
+                phone = %s,
+                email = %s,
+                address = %s,
+                region = %s,
+                blood_group = %s,
+                nhis_number = %s,
+                nhis_expiry = %s,
+                emergency_contact_name = %s,
+                emergency_contact_phone = %s
+            WHERE patient_id = %s
+        """, (full_name, phone, email, address, region,
+            blood_group, nhis_number, nhis_expiry,
+            emergency_contact_name, emergency_contact_phone,
+            patient_id))
+
+        connection.commit()
+        print(f"✅ Patient {patient_id} updated successfully!")
+        return True
+    except Exception as e:
+        print(f"❌ Error updating patient: {e}")
+        connection.rollback()
+        return False 
+    finally:
+        close_connection(connection, cursor)     
+
+def delete_patient(patient_id):
+    connection = get_connection()
+    if not connection:
+        return False
+    
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("DELETE FROM patients WHERE patient_id = %s",(patient_id,))
+
+        connection.commit()
+        print(f"✅ Patient {patient_id} deleted successfully!")
+        return True
+    except Exception as e:
+        print(f"❌ Error deleting patient: {e}")
+        connection.rollback()
+        return False
+    finally:
+        close_connection(connection, cursor)
