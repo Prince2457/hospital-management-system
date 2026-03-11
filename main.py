@@ -1,14 +1,8 @@
-from config.db import get_connection, close_connection
-from utils.patients import get_all_patients, get_patient_by_id ,create_patient,update_patient,delete_patient
-def main():
-    print("🏥 Hospital Management System")
-    print("=" * 40)
-    delete_patient(3)
-    patients = get_all_patients()
-    for patient in patients:
-        print(patient['patient_id'], '-', patient['full_name'])
-    
+from utils.doctors import get_all_doctors, create_doctor
 
+create_doctor(1, 'Cardiology', 'MBChB', 'LIC-001', 'Heart Center', 'Monday,Wednesday,Friday', 150.00)
 
-if __name__ == "__main__":
-    main()
+doctors = get_all_doctors()
+print(f"\nAll doctors ({len(doctors)} found):")
+for doctor in doctors:
+    print(f"{doctor['doctor_id']} - {doctor['specialization']} - {doctor['department']}")

@@ -119,6 +119,10 @@ def delete_patient(patient_id):
         cursor.execute("DELETE FROM patients WHERE patient_id = %s",(patient_id,))
 
         connection.commit()
+        if cursor.rowcount == 0:
+            print(f"❌ Patient {patient_id} not found.")
+            return False
+
         print(f"✅ Patient {patient_id} deleted successfully!")
         return True
     except Exception as e:
