@@ -58,6 +58,7 @@ def create_doctor(user_id, specialization, qualification, license_number, depart
     
     except Exception as e:
         print(f"Failed to create doctor{e}")
+        connection.rollback()
         return False
     
     finally:
@@ -90,6 +91,7 @@ def update_doctor(doctor_id, user_id, specialization, qualification, license_num
     
     except Exception as e:
         print(f"Failed to update doctor details{e}")
+        connection.rollback()
         return False
     
     finally:
@@ -113,6 +115,7 @@ def delete_doctor(doctor_id):
         return True
     except Exception as e:
         print(f"Failed to delete doctor{e}")    
+        connection.rollback()
         False
 
     finally:

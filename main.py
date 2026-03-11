@@ -1,8 +1,9 @@
 from utils.doctors import get_all_doctors, create_doctor
+from utils.appointments import get_all_appointments, create_appointment
 
-create_doctor(1, 'Cardiology', 'MBChB', 'LIC-001', 'Heart Center', 'Monday,Wednesday,Friday', 150.00)
+create_appointment(2, 1, '2026-03-15', '10:00:00', 'scheduled', 'First consultation')
 
-doctors = get_all_doctors()
-print(f"\nAll doctors ({len(doctors)} found):")
-for doctor in doctors:
-    print(f"{doctor['doctor_id']} - {doctor['specialization']} - {doctor['department']}")
+appointments = get_all_appointments()
+print(f"\nAll appointments ({len(appointments)} found):")
+for appointment in appointments:
+    print(f"{appointment['appointment_id']} - {appointment['patient_id']} - {appointment['status']}")
