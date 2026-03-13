@@ -1,23 +1,68 @@
-from utils.billing import create_bill, get_all_billing
-from utils.inventory import create_inventory, get_all_inventory
-from utils.medical_records import create_record, get_all_medical_records
+from models.patient import Patient
+from models.doctor import Doctor
+from models.appointment import Appointment
+from models.billing import Billing
+from models.inentory import Inventory
+from models.medical_records import MedicalRecords
 
-# Test billing
-create_bill(2, 1, 'Consultation', 150.00, 'pending', None)
+# create a patient object
+p1 = Patient(
+    patient_id=1,
+    full_name="John Mensah",
+    ghana_card_number="GHA-123456789",
+    date_of_birth="1990-05-15",
+    gender="male",
+    phone="0244123456"
+)
 
-# Test inventory
-create_inventory('Paracetamol', 'medicine', 100, 20, 2.50)
+# create a doctor object
+d1 = Doctor(
+    doctor_id=1,
+    full_name="Kwame Asante",
+    license_number="LIC-001",
+    specialization="Cardiology",
+    consultation_fee=150.00
+)
 
-# Test medical records
-create_record(2, 1, 1, 'Hypertension', 'Rest and medication', 'Blood pressure test', 'Monitor weekly')
+a1 = Appointment(
+    appointment_id=1,
+    patient_id=1,
+    doctor_id=1,
+    appointment_date="2026-03-13",
+    appointment_time="9:00:00"
+)
 
-# View all
-bills = get_all_billing()
-print(f"Bills: {len(bills)} found")
+b1 = Billing(
+    bill_id=1,
+    patient_id=1,
+    appointment_id=1,
+    bill_item="Medical bill",
+    amount=5.00
+)
 
-items = get_all_inventory()
-print(f"Inventory: {len(items)} found")
+i1 = Inventory(
+    item_id=1,
+    item_name="Surgical gloves",
+    item_category="Supplies",
+    quantity=60,
+    reorder_level=20, 
+    item_cost=5.00
+)
 
-records = get_all_medical_records()
-print(f"Medical records: {len(records)} found")
-
+m1 = MedicalRecords(
+    record_id=1,
+    patient_id=1,
+    doctor_id=1,
+    appointment_id=1,
+    diagnosis="Hypertension",
+    treatment="Rest and medication",
+    lab_test="Blood pressure test",
+    notes="monitor weekly",
+)
+# print both
+print(p1)
+print(d1)
+print(a1)
+print(b1)
+print(i1)
+print(m1)
