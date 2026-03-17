@@ -170,8 +170,7 @@ def patient_menu():
                     print(Fore.BLUE +f"  Total Number Of Patients left: {no_of_patients}")
                     print(Fore.CYAN + "-"*41)
                 elif confirm.strip().lower() == "no":
-                    print(Fore.YELLOW + "  Cancelled.")
-                    continue    
+                    print(Fore.YELLOW + "  Cancelled.")   
             except ValueError:
                 print(Fore.RED + "Invalid input. Please enter a number")
             except Exception as e:
@@ -189,7 +188,7 @@ def doctor_menu():
         print(Fore.CYAN +"\n" + "="*45)
         print(Fore.WHITE + " 1. View all doctors")
         print(Fore.WHITE + " 2. View doctor by ID")
-        print(Fore.WHITE + " 4. Add doctor")
+        print(Fore.WHITE + " 3. Add doctor")
         print(Fore.WHITE + " 4. Update doctor")
         print(Fore.WHITE + " 5. Delete doctor")
         print(Fore.RED +   " 6. Go Back")
@@ -209,13 +208,103 @@ def doctor_menu():
                 print(Fore.RED + "No doctors found.")        
 
         elif choice == "2":
-            print(Fore.GREEN + "\nFetching doctor by ID...")
+            print(Fore.CYAN + "\n=== Fetch Doctor By ID ===")
+            doctor_id = input(Fore.YELLOW + "  Patient ID: ")
+            try:
+                doctor_id = int(doctor_id)
+                doctor = get_doctor_by_id(doctor_id)
+                if doctor:
+                    print(Fore.CYAN + "\n"+"-"*41)
+                    print(Fore.YELLOW + f"  ID: {doctor['doctor_id']} | {doctor['specialization']} | {doctor['department']} | {doctor['available_days']} | {doctor['consultation_fee']}")
+                    print(Fore.CYAN + "-"*41)
+                else:
+                    print(Fore.RED + f"  Doctor ID:{doctor_id} not found.")
+            except ValueError :
+                print(Fore.RED + "  Invalid input. Enter a number.")            
         elif choice == "3":
-            print(Fore.GREEN + "\nAdding doctor...")
+            print(Fore.GREEN + "\n=== Add New Doctor ===")
+            try: 
+                user_id = 1
+                specialization = input(Fore.YELLOW + "  Specialization: ").strip().title()
+                qualification = input(Fore.YELLOW + "  Qualification: ").strip().title()
+                license_number = input(Fore.YELLOW + "  License Number: ").strip().title()
+                department = input(Fore.YELLOW + "  Department: ").strip().title()
+                available_days = input(Fore.YELLOW + "  Available Days (Enter to skip.): ").strip() or None
+
+                consultation_fee = input(Fore.YELLOW + "  Consultation Fee: ").strip()
+                consultation_fee = float(consultation_fee)
+
+                result = create_doctor(user_id, specialization,qualification, license_number,
+                            department, available_days, consultation_fee)
+                if result:
+                    print(Fore.GREEN + f"Doctor added successfully. ID-{result}")
+                else:
+                    print(Fore.RED + "  Failed to add doactor.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")                
         elif choice == "4":
-            print(Fore.GREEN + "\nUpdating doctor...")   
+            print(Fore.GREEN + "\n=== Update Doctor Info ===")  
+            try:
+                doctor_id = input(Fore.YELLOW + "  Doctor ID: ")
+                doctor_id = int(doctor_id)
+                existing = get_doctor_by_id(doctor_id)
+                if not existing:
+                    print(Fore.RED + f"  Doctor ID-{doctor_id} not found.")
+                    continue
+
+                user_id = input(Fore.YELLOW + f"  User ID ({existing['user_id']}): ").strip() or existing['user_id']
+                user_id = int(user_id)
+
+                specialization = input(Fore.YELLOW + f"  Specialization ({existing['specialization']}): ").strip().title() or existing['specialization']
+                qualification = input(Fore.YELLOW + f"  Qualification ({existing['qualification']}): ").strip().title() or existing['qualification']
+                license_number = input(Fore.YELLOW + f"  License Number ({existing['license_number']}): ").strip().title() or existing['license_number']
+                department = input(Fore.YELLOW + f"  Departmnet ({existing['department']}): ").strip().title() or existing['department']
+                available_days = input(Fore.YELLOW + f"  Available Days ({existing['available_days']}): ").strip().title() or existing['available_days']
+
+                consultation_fee = input(Fore.YELLOW + f"  Consultation Fee ({existing['consultation_fee']}):").strip() or existing['consultation_fee']
+                consultation_fee = float(consultation_fee)
+
+                result = update_doctor(doctor_id, user_id, specialization, qualification, 
+                            license_number,department, available_days, consultation_fee)
+                if result:
+                    print(Fore.GREEN + f"  Doctor ID- {doctor_id} updated successfully.")
+                else:
+                    print(Fore.RED + f"  Failed to update doctor ID-{doctor_id}") 
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")               
         elif choice == "5":
-            print(Fore.GREEN + "\nDeleting doctor...")
+            print(Fore.CYAN + "\n=== Delete Doctor Info ===")
+            try:
+                doctor_id_1 = input(Fore.YELLOW + "  Doctor ID: ")
+                doctor_id_1 = int(doctor_id_1)
+                existing_1 = get_doctor_by_id(doctor_id_1)
+                if not existing_1:
+                    print(Fore.RED + f"  Doctor ID- {doctor_id_1} not found")
+                    continue
+                print(Fore.BLUE + f" {existing_1['doctor_id']} | {existing_1['specialization']} | {existing_1['department']} | {existing_1['available_days']} | {existing_1['consultation_fee']}")
+                print(Fore.RED + """            Are you sure 
+                    You Want To Delete
+                    (YES?NO)""") 
+                
+                confirm = input(Fore.RED + "  Enter 'Yes' to confirm . Enter 'No' to cancel.: ")
+
+                if confirm.strip().lower() == 'yes':
+                    delete_doctor(doctor_id_1)
+                    no_of_doctors = len(get_all_doctors())
+                    print(Fore.GREEN + f"  Doctor ID-{doctor_id_1} successfully deleted.")
+                    print(Fore.CYAN + "\n"+"-"*41)
+                    print(Fore.BLUE + f"  Total number of doctors left: {no_of_doctors}")
+                    print(Fore.CYAN + "\n"+"-"*41)
+                elif confirm.strip().lower() == 'no':
+                    print(Fore.YELLOW + "  cancelled")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number:")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")            
         elif choice == "6":
             break
         else:

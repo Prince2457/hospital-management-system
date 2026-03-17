@@ -53,8 +53,9 @@ def create_doctor(user_id, specialization, qualification, license_number, depart
                 VALUES(%s,%s,%s,%s,%s,%s,%s)""",
                     (user_id, specialization, qualification, license_number, department, available_days, consultation_fee ))
         connection.commit()
+        doctor_id = cursor.lastrowid
         print("Doctor created successfully")
-        return True
+        return doctor_id
     
     except Exception as e:
         print(f"Failed to create doctor{e}")
