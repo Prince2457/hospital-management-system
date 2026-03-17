@@ -59,8 +59,9 @@ def create_patient(full_name, ghana_card_number, date_of_birth, gender,
                 emergency_contact_phone, registered_by))
         
         connection.commit()
+        new_patient_id = cursor.lastrowid
         print(f"✅ Patient {full_name} created successfully!")
-        return True
+        return new_patient_id
     except Exception as e:
         print(f"❌ Error creating patient: {e}")
         connection.rollback()
