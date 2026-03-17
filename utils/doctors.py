@@ -19,7 +19,7 @@ def get_all_doctors():
     finally:
         close_connection(connection, cursor)
 
-def get_doctor_by_id(doctors_id):
+def get_doctor_by_id(doctor_id):
     connection = get_connection()
     if not connection:
         return None
@@ -27,7 +27,7 @@ def get_doctor_by_id(doctors_id):
     cursor = connection.cursor(dictionary=True, buffered=True)
 
     try:
-        cursor.execute("SELECT * FROM doctors WHRERE doctor_id =%s",(doctors_id,))
+        cursor.execute("SELECT * FROM doctors WHERE doctor_id =%s",(doctor_id,))
         doctor = cursor.fetchone()
         print("Doctor fetched successfully")
         return doctor
@@ -116,7 +116,7 @@ def delete_doctor(doctor_id):
     except Exception as e:
         print(f"Failed to delete doctor{e}")    
         connection.rollback()
-        False
+        return False
 
     finally:
         close_connection(connection, cursor)    
