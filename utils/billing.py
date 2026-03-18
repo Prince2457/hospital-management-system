@@ -19,7 +19,7 @@ def update_bill(bill_id, patient_id, appointment_id, bill_item, amount, payment_
         bill_item=%s,
         amount=%s,
         payment_status=%s,
-        payment_date=%s,
+        payment_date=%s
         WHERE bill_id =%s
         """,(patient_id, appointment_id, bill_item, amount, payment_status, payment_date,bill_id),
         commit=True

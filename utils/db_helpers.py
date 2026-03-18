@@ -12,6 +12,8 @@ def execute_query(query, params=None, fetch='all', commit=False):
 
         if commit:
             connection.commit()
+            if cursor.lastrowid:
+                return cursor.lastrowid
             return cursor.rowcount
         
         if fetch == "all":
