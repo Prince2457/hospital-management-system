@@ -446,7 +446,7 @@ def appointment_menu():
                     print(Fore.RED + f"\n  Appointment ID: {appointment_id_2} not found.")
                     continue
                 print(Fore.BLUE + f"Appointment ID:{existing_1['appointment_id']} | Patient ID:{existing_1['patient_id']} | Doctor ID:{existing_1['doctor_id']} | {existing_1['appointment_date']} | {existing_1['appointment_time']} | {existing_1['status']}")
-                print(Fore.BLUE + """                    Are You Sure
+                print(Fore.RED + """                    Are You Sure
                         You Want To Delete 
                         (YES/NO)""")
                 
@@ -486,23 +486,139 @@ def billing_menu():
         choice = input(Fore.YELLOW + "Enter choice(1-6): ")
 
         if choice == "1":
-            billing = get_all_billing()
-            if billing:
-                print(Fore.CYAN + f"{len(billing)} billing found")
-                print(Fore.CYAN + "-"*41)
-                for b in billing:
-                    print(Fore.YELLOW + f"Bill ID:{b['bill_id']} | Patient ID:{b['patient_id']} | Appointment ID:{b['appointment_id']} | {b['bill_item']} | {b['amount']} | {b['status']}")
-                print(Fore.CYAN + "-"*41)
-            else:
-                print(Fore.RED + "No Billing Found")        
+            try:
+                billing = get_all_billing()
+                if billing:
+                    print(Fore.CYAN + f"{len(billing)} billing found")
+                    print(Fore.CYAN + "-"*41)
+                    for b in billing:
+                        print(Fore.YELLOW + f"Bill ID:{b['bill_id']} | Patient ID:{b['patient_id']} | Appointment ID:{b['appointment_id']} | {b['bill_item']} | {b['amount']} | {b['payment_status']}")
+                    print(Fore.CYAN + "-"*41)
+                else:
+                    print(Fore.RED + "No Billing Found")
+            except Exception as e:
+                print(Fore.RED + f"   Error: {e}")                
         elif choice == "2":
-            print(Fore.GREEN + "\nFetching billing by ID...")
+            print(Fore.GREEN + "\n=== Fetch Billing By ID ===")
+            bill_id = input(Fore.YELLOW + "  Bill ID: ")
+            try:
+                bill_id = int(bill_id)
+                bill = get_billing_by_id(bill_id)
+                if bill:
+                    print(Fore.GREEN + f"\n  Bill ID: {bill_id} found")
+                    print(Fore.CYAN + "-"*41)
+                    print(Fore.YELLOW + f"Bill ID:{bill['bill_id']} | Patient ID:{bill['patient_id']} | Appointment ID:{bill['appointment_id']} | {bill['bill_item']} | {bill['amount']} | {bill['payment_status']}")
+                    print(Fore.CYAN + "-"*41) 
+                else:
+                    print(Fore.RED + f"  Bill ID: {bill_id} doesn\'t exist.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
         elif choice == "3":
-            print(Fore.GREEN + "\nAdding billing...")
+            print(Fore.GREEN + "\n=== Add New Bill ===")
+            try:
+                patient_id_b = int(input(Fore.YELLOW + "  Patient ID: "))
+                appointment_id_b = int(input(Fore.YELLOW + "  Appointment ID: "))
+                bill_item = input(Fore.YELLOW + "  Bill Item:  ").strip()
+                amount = float(input(Fore.YELLOW + "  Amount: "))
+
+                payment_status = input(Fore.YELLOW + "  Payment Status: ") or 'pending' 
+                if payment_status not in ['pending', 'paid', 'overdue']:
+                    print(Fore.RED + "  Payment status must be pending/paid/overdue.")
+                    continue
+
+                payment_date_input = input(Fore.YELLOW + "  Payment Date: ")
+                if payment_date_input:
+                    datetime.strptime(payment_date_input, "%Y-%m-%d")
+                    payment_date = payment_date_input
+                else:
+                    payment_date = None
+
+                result = create_bill(patient_id_b, appointment_id_b, bill_item,
+                            amount, payment_status, payment_date)
+
+                if result:
+                    print(Fore.GREEN + f"  Bill successfully added ID: {result}")
+                else:
+                    print(Fore.RED + "  Failed to add  bill.")
+            except ValueError:
+                print(Fore.RED + " Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")                
         elif choice == "4":
-            print(Fore.GREEN + "\nUpdating billing...")
+            print(Fore.GREEN + "\n === Update Billing ===")
+            try:
+                bill_id = int(input(Fore.YELLOW + "  Bill ID: "))
+                existing  = get_billing_by_id(bill_id)
+                if not existing:
+                    print(Fore.RED + f"  Bill ID: {bill_id} not found.")
+                    continue
+
+                patient_id_b = (input(Fore.YELLOW + f"  Patient ID({existing['patient_id']}): ")) or existing['patient_id']
+                patient_id_b = int(patient_id_b)
+
+                appointment_id_b = (input(Fore.YELLOW + f"  Appointment ID({existing['appointment_id']}): ")) or existing['appointment_id']
+                appointment_id_b = int(appointment_id_b)
+
+                bill_item = input(Fore.YELLOW + f"  Bill Item({existing['bill_item']}): ").strip() or existing['bill_item']
+
+                amount = input(Fore.YELLOW + f"  Amount({existing['amount']}): ") or existing['amount']
+                amount = float(amount)
+
+                payment_status_input = input(Fore.YELLOW + f"  Payment Status({existing['payment_status']}): ")
+                if payment_status_input:
+                    payment_status = payment_status_input 
+                    if payment_status not in ['pending', 'paid', 'overdue']:
+                        print(Fore.RED + "  Payment status must be pending/paid/overdue.")
+                        continue
+                else:
+                    payment_status = existing['payment_status']
+
+                payment_date_input = input(Fore.YELLOW + f"  Payment Date({existing['payment_date']}): ")
+                if payment_date_input:
+                    datetime.strptime(payment_date_input, "%Y-%m-%d")
+                    payment_date = payment_date_input
+                else:
+                    payment_date = existing['payment_date']   
+
+                result = update_bill(bill_id, patient_id_b, appointment_id_b, bill_item, amount, payment_status, payment_date)
+                if result is not None:
+                    print(Fore.GREEN + f"  Bill updated successfully ID: {bill_id}")
+                else:
+                    print(Fore.RED + f"  Failed update bill ID: {bill_id}")                            
+            except ValueError:
+                print(Fore.RED + " Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")     
         elif choice == "5":
-            print(Fore.GREEN + "\nDeleting billing...") 
+            print(Fore.GREEN + "\n=== Delete Billing ===")
+            try:
+                bill_id = int(input(Fore.YELLOW + "  Bill ID: "))
+                existing  = get_billing_by_id(bill_id)
+                if not existing:
+                    print(Fore.RED + f"  Bill ID: {bill_id} not found.")
+                    continue
+                print(Fore.BLUE + f"Bill ID:{existing['bill_id']} | Patient ID:{existing['patient_id']} | Appointment ID:{existing['appointment_id']} | {existing['bill_item']} | {existing['amount']} | {existing['payment_status']}")
+                print(Fore.RED + """                    Are You Sure
+                        You Want To Delete 
+                        (YES/NO)""")
+                
+                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
+
+                if confirm.strip().lower() == 'yes':
+                    delete_bill(bill_id)
+                    no_of_billings = len(get_all_billing())
+                    print(Fore.GREEN + f"\n  Bill ID: {bill_id} deleted successfully.")
+                    print(Fore.CYAN + "\n" +"-"*41)
+                    print(Fore.WHITE + f"\n  Total number of Billings left: {no_of_billings}")
+                    print(Fore.CYAN + "-"*41)
+                elif confirm.strip().lower() == 'no':
+                    print(Fore.YELLOW + "  cancelled.")    
+            except ValueError:
+                print(Fore.RED + " Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")      
         elif choice == "6":
             break
         else:
