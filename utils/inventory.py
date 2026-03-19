@@ -21,7 +21,7 @@ def update_inventory(item_id, item_name, item_category, quantity, reorder_level,
             item_category=%s,
             quantity=%s,
             reorder_level=%s,
-            item_cost=%s,
+            item_cost=%s
             WHERE item_id=%s""",
             (item_name, item_category, quantity, reorder_level, item_cost, item_id), commit=True)
 

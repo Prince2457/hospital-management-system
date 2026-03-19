@@ -645,29 +645,123 @@ def inventory_menu():
                 print(Fore.CYAN + f"{len(inventory)} inventory found")
                 print(Fore.CYAN + "-"*41)
                 for i in inventory:
-                    print(f"Item ID:{i['item_id']} | {i['item_name']} | {i['item_category']} | {i['quantity']} | {i['reorder_level']} | {i['item_cost']}")
+                    print(Fore.YELLOW + f"Item ID:{i['item_id']} | {i['item_name']} | {i['item_category']} | {i['quantity']} | {i['reorder_level']} | {i['item_cost']}")
                 print(Fore.CYAN+ "-"*41)
             else:
                 print(Fore.RED + "No inventory Found")        
         elif choice == "2":
-            inventory_id = input("Enter inventory_id: ")
-            if inventory_id:
-                inventory = get_inventory_by_id(inventory_id)
+            item_id = input("  Item ID: ")
+            try:
+                item_id = int(item_id)
+                inventory = get_inventory_by_id(item_id)
                 if inventory:
-                    print(Fore.CYAN + "Inevtory found")
+                    print(Fore.CYAN + f"  Inventory ID: {item_id} found")
                     print(Fore.CYAN + "-"*45)
-                    print(Fore.YELLOW + f"Item ID:{i['item_id']} | {i['item_name']} | {i['item_category']} | {i['quantity']} | {i['reorder_level']} | {i['item_cost']}")
+                    print(Fore.YELLOW + f"Item ID:{inventory['item_id']} | {inventory['item_name']} | {inventory['item_category']} | {inventory['quantity']} | {inventory['reorder_level']} | {inventory['item_cost']}")
                     print(Fore.CYAN + "-"*45)
                 else:
                     print(Fore.RED + "No iventory found with the ID")
-            else:
-                print(Fore.RED + "Enter Iventory ID")        
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:    
+                print(Fore.RED+ f"  Error: {e}")        
         elif choice == "3":
-            print(Fore.GREEN + "\nAdding  inventory...")
+            print(Fore.GREEN + "\n === Add New Inventory ===")
+            try:
+                item_name = input(Fore.YELLOW + "  Item Name: ").strip()
+
+                item_category = input(Fore.YELLOW + "  Item Category (medicine/equipment/supplies): ").strip()
+                if item_category not in ['medicine', 'equipment', 'supplies']:
+                    print(Fore.RED + " Item category must be medicine/equipment/supplies")
+                    continue
+
+                quantity =  input(Fore.YELLOW + "  Quantity: ").strip()
+                quantity = int(quantity) 
+
+                reorder_level = input(Fore.YELLOW + "  Reorder Level: ").strip()
+                reorder_level = int(reorder_level)
+
+                item_cost = input(Fore.YELLOW + "  Item Cost: ").strip()
+                item_cost = float(item_cost)
+
+                result = create_inventory(item_name, item_category, quantity, reorder_level,
+                            item_cost)    
+                if result:
+                    print(Fore.GREEN + f"  Inventory added successfull ID: {result}")
+                else:
+                    print(Fore.RED + "  Failed to add inventory.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:    
+                print(Fore.RED+ f"  Error: {e}")                
         elif choice == "4":
-            print(Fore.GREEN + "\nUpdating inventory...")
+            print(Fore.GREEN + "\n=== Update Inventory ===")
+            try:
+                item_id = input(Fore.YELLOW + "  Item ID: ")
+                item_id = int(item_id)
+                existing = get_inventory_by_id(item_id)
+                if not existing:
+                    print(Fore.RED + f"  Item ID: {item_id} not found.")
+                    continue
+                item_name = input(Fore.YELLOW + f"  Item Name({existing['item_name']}): ") or existing['item_name']
+
+                item_category_input = input(Fore.YELLOW + f" Item Category({existing['item_category']}): ")
+                if item_category_input:
+                    item_category = item_category_input
+                    if item_category not in ['medicine', 'equipment', 'supplies']:
+                        print(Fore.RED + " Item category must be medicine/equipment/supplies")
+                        continue
+                else:
+                    item_category = existing['item_category']
+
+                quantity = input(Fore.YELLOW + f"  Quantity({existing['quantity']}): ") or existing['quantity']
+                quantity = int(quantity)
+
+                reorder_level = input(Fore.YELLOW + f"  Reorder Level ({existing['reorder_level']}):") or existing['reorder_level']
+                reorder_level = int(reorder_level)
+
+                item_cost = input(Fore.YELLOW + f"  Item Cost ({existing['item_cost']}): ").strip() or existing['item_cost']
+                item_cost = float(item_cost)
+
+                result = update_inventory(item_id, item_name, item_category, quantity,
+                            reorder_level, item_cost)
+                if result is not None:
+                    print(Fore.GREEN + f"  Inventory updated successfully ID: {item_id}")
+                else:
+                    print(Fore.RED + "  Failed to Update inventory.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:    
+                print(Fore.RED+ f"  Error: {e}")              
         elif choice == "5":
-            print(Fore.GREEN + "\nDeleting inventory...") 
+            print(Fore.GREEN + "\n=== Delete Inventory ===")
+            try:
+                item_id = input(Fore.YELLOW + "  Item ID: ")
+                item_id = int(item_id)
+                existing = get_inventory_by_id(item_id)
+                if not existing:
+                    print(Fore.RED + f"  Item ID: {item_id} not found.")
+                    continue
+                print(Fore.BLUE + f"Item ID:{existing['item_id']} | {existing['item_name']} | {existing['item_category']} | {existing['quantity']} | {existing['reorder_level']} | {existing['item_cost']}")
+                print(Fore.RED + """                    Are You Sure
+                        You Want To Delete 
+                        (YES/NO)""")
+
+                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
+
+                if confirm.strip().lower() == 'yes':
+                    delete_inventory(item_id)
+                    no_of_inventory = len(get_all_inventory())
+                    print(Fore.GREEN + f"\n  Item ID: {item_id} deleted successfully.")
+                    print(Fore.CYAN + "\n" +"-"*41)
+                    print(Fore.WHITE + f"\n  Total number of Inventory left: {no_of_inventory}")
+                    print(Fore.CYAN + "-"*41)
+                elif confirm.strip().lower() == 'no':
+                    print(Fore.YELLOW + "  cancelled.")    
+            except ValueError:
+                print(Fore.RED + " Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")    
         elif choice == "6":
             break
         else:
@@ -707,6 +801,7 @@ def medical_records_menu():
 while True:
     print_header()
     main_menu()
+
     choice = input(Fore.YELLOW + " Enter choice (1-7): ")
 
     if choice == "1":
