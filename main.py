@@ -784,15 +784,129 @@ def medical_records_menu():
         choice = input(Fore.YELLOW + "Enter choice(1-6): ")
         
         if choice == "1":
-            print(Fore.GREEN + "\nFetching all medical records...")
+            print(Fore.GREEN + "\n=== Fetch all Medical Records ===")
+            try:
+                medical_records = get_all_medical_records()
+                if medical_records:
+                    print(Fore.GREEN + f"  {len(medical_records)}  medical record(s) found.")
+                    print(Fore.CYAN + "\n"+"-"*41)
+                    for m_r in medical_records:
+                        print(Fore.YELLOW +  f"  Record ID: {m_r['record_id']} | {m_r['patient_id']} | {m_r['doctor_id']} | {m_r['appointment_id']} | {m_r['diagnosis']} | {m_r['treatment']} | {m_r['lab_tests']} | {m_r['notes']} ")
+                    print(Fore.CYAN + "-"*41)    
+                else:
+                    print(Fore.RED + "  No Medical Record  found")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}") 
         elif choice == "2":
-            print(Fore.GREEN + "\nFetching medical record by ID...")
+            print(Fore.GREEN + "\n === Fetch Medical Record By ID ===")
+            try:
+                record_id = input(Fore.YELLOW + "  Record ID: ")
+                record_id = int(record_id)
+
+                medical_record = get_medical_record_by_id(record_id)
+                if medical_record:
+                    print(Fore.CYAN + "\n"+"-"*41)
+                    print(Fore.YELLOW +  f"  Record ID: {medical_record['record_id']} | {medical_record['patient_id']} | {medical_record['doctor_id']} | {medical_record['appointment_id']} | {medical_record['diagnosis']} | {medical_record['treatment']} | {medical_record['lab_tests']} | {medical_record['notes']} ")
+                    print(Fore.CYAN + "-"*41)
+                else:
+                    print(Fore.RED + "  No Medical Record  found")
+            except ValueError:
+                print(Fore.RED + "  Invalid input.Enter a number.")        
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}") 
         elif choice == "3":
-            print(Fore.GREEN + "\nAdding medical record...")
+            print(Fore.GREEN + "\n === Add New  Medical Record ===")
+            try:
+                patient_id_mr = input(Fore.YELLOW + "  Patient ID: ").strip()
+                patient_id_mr = int(patient_id_mr)
+
+                doctor_id_mr = input(Fore.YELLOW + "  Doctor ID: ").strip()
+                doctor_id_mr = int(doctor_id_mr)
+
+                appointment_id_mr = input(Fore.YELLOW + "  Appointment ID: ").strip()
+                appointment_id_mr= int(appointment_id_mr)
+
+                diagnosis = input(Fore.YELLOW + " Diagnosis: ").strip()
+                treatment = input(Fore.YELLOW + " Treatment: ").strip() or None
+                lab_tests = input(Fore.YELLOW + " Lab Test: ").strip() or None
+                notes = input(Fore.YELLOW + " Notes: ").strip() or None
+                
+                result = create_record(patient_id_mr, doctor_id_mr,appointment_id_mr,diagnosis,
+                            treatment,lab_tests,notes)
+                
+                if result :
+                    print(Fore.GREEN + f"  Medical Record Added Successfully ID: {result}")
+                else:
+                    print(Fore.RED + "  Failed to add Medical Record.")    
+            except ValueError:
+                print(Fore.RED + "  Invalid input.Enter a number.")        
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")         
         elif choice == "4":
-            print(Fore.GREEN + "\nUpdating medical record...")
+            print(Fore.GREEN + "\n=== Update Medical Record ===")
+            try:
+                record_id = input(Fore.YELLOW + "  Record ID: ")
+                record_id = int(record_id)
+                existing = get_medical_record_by_id(record_id)
+                if not existing:
+                    print(Fore.RED + f"  Record ID: {record_id} not found.")
+                    continue
+                print(Fore.GREEN + f"  Record ID: {record_id} found.")
+                patient_id_mr = input(Fore.YELLOW + f"  Patient ID({ existing['patient_id']}): ").strip() or existing['patient_id']
+                patient_id_mr = int(patient_id_mr)
+
+                doctor_id_mr = input(Fore.YELLOW + f"  Doctor ID(): ").strip() or  existing['doctor_id']
+                doctor_id_mr = int(doctor_id_mr)
+
+                appointment_id_mr = input(Fore.YELLOW + f"  Appointment ID({existing['appointment_id']}): ").strip() or existing['appointment_id']
+                appointment_id_mr= int(appointment_id_mr)
+
+                diagnosis = input(Fore.YELLOW + f"  Diagnosis({existing['diagnosis']}): ").strip() or  existing['diagnosis']
+                treatment = input(Fore.YELLOW + f"  Treatment({existing['treatment']}): ").strip() or  existing['treatment']
+                lab_tests = input(Fore.YELLOW + f"  Lab Test({existing['lab_tests']}): ").strip() or  existing['lab_tests']
+                notes = input(Fore.YELLOW + f"  Notes({existing['notes']}): ").strip() or existing['notes']
+
+                result = update_medical_record(record_id, patient_id_mr, doctor_id_mr, appointment_id_mr,
+                            diagnosis, treatment, lab_tests, notes)
+                if result is not None:
+                    print(Fore.GREEN + f"  Medical Record Updated Successfully ID: {record_id}")
+                else:
+                    print(Fore.RED + "  Failed to update Medical Record.")    
+            except ValueError:
+                print(Fore.RED + "  Invalid Input.Enter a number.")        
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")         
+                
         elif choice == "5":
-            print(Fore.GREEN + "\nDeleting medical record...") 
+            print(Fore.GREEN + "\n=== Delete Medical Record ===") 
+            try:
+                record_id = input(Fore.YELLOW + "  Record ID: ")
+                record_id = int(record_id)
+                existing = get_medical_record_by_id(record_id)
+                if not existing:
+                    print(Fore.RED + f"  Record ID: {record_id} not found.")
+                    continue
+                print(Fore.GREEN + f"  Record ID: {record_id} found.")
+                print(Fore.YELLOW +  f"  Record ID: {existing['record_id']} | {existing['patient_id']} | {existing['doctor_id']} | {existing['appointment_id']} | {existing['diagnosis']} | {existing['treatment']} | {existing['lab_tests']} | {existing['notes']} ")
+                print(Fore.RED + """                    Are You Sure
+                        You Want To Delete 
+                        (YES/NO)""")
+
+                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
+
+                if confirm.strip().lower() == 'yes':
+                    delete_medical_record(record_id)
+                    no_of_records = len(get_all_medical_records())
+                    print(Fore.GREEN + f"\n  Item ID: {record_id} deleted successfully.")
+                    print(Fore.CYAN + "\n" +"-"*41)
+                    print(Fore.WHITE + f"\n  Total number of Medical Records left: {no_of_records}")
+                    print(Fore.CYAN + "-"*41)
+                elif confirm.strip().lower() == 'no':
+                    print(Fore.YELLOW + "  cancelled.")    
+            except ValueError:
+                print(Fore.RED + " Invalid input.Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")    
         elif choice == "6":
             break
         else:
