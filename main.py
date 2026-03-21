@@ -2,11 +2,12 @@ from colorama import init, Fore , Style
 from utils.patients import get_all_patients, get_patient_by_id, create_patient, update_patient, delete_patient
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
 from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill
-from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment
+from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from datetime import datetime
 init(autoreset=True)
+
 
 def print_header():
     print(Fore.CYAN + Style.BRIGHT + "="*45)
@@ -373,6 +374,12 @@ def appointment_menu():
                     print(Fore.BLUE + "  Status must be scheduled/completed/cancelled.")
                     continue
                 notes = input(Fore.YELLOW + "  Notes: ").strip() or None
+
+                available = check_doctor_availability(doctor_id, appointment_date, appointment_time)
+                if not available:
+                    print(Fore.RED + f"\n Doctor ID {doctor_id} is already booked on {appointment_date} at {appointment_time}.")
+                    print(Fore.YELLOW + "  Please choose a different date, time, or doctor.")
+                    continue
 
                 result_a = create_appointment(patient_id, doctor_id, appointment_date,
                             appointment_time, status, notes)

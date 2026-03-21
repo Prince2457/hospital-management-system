@@ -30,3 +30,15 @@ def update_appointment(appointment_id, patient_id, doctor_id, appointment_date, 
 
 def delete_appointment(appointment_id):    
     return execute_query('DELETE  FROM appointments WHERE appointment_id =%s',(appointment_id,), commit=True )
+
+def check_doctor_availability(doctor_id, appointment_date, appointment_time):
+    result = execute_query(
+        """SELECT * FROM appointments
+        WHERE doctor_id = %s
+        AND appointment_date = %s
+        AND appointment_time =%s
+        AND status = 'scheduled'""",
+        (doctor_id, appointment_date, appointment_time),
+        fetch="one"
+    )
+    return result is None
