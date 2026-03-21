@@ -3,7 +3,7 @@ from utils.patients import get_all_patients, get_patient_by_id, create_patient, 
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
 from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill
 from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment
-from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory
+from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from datetime import datetime
 init(autoreset=True)
@@ -672,10 +672,11 @@ def inventory_menu():
         print(Fore.WHITE + " 3. Add inventory.")
         print(Fore.WHITE + " 4. Update inventory.")
         print(Fore.WHITE + " 5. Delete inventory")
-        print(Fore.RED +   " 6. GO Back")
+        print(Fore.WHITE + " 6. low stock alert 🚨")
+        print(Fore.RED +   " 7. GO Back")
         print(Fore.CYAN + "-"*45)
         
-        choice = input(Fore.YELLOW + "Enter choice(1-6): ")
+        choice = input(Fore.YELLOW + "Enter choice(1-7): ")
         
         if choice == "1":
             inventory = get_all_inventory()
@@ -801,9 +802,21 @@ def inventory_menu():
             except Exception as e:
                 print(Fore.RED + f"  Error: {e}")    
         elif choice == "6":
+            print(Fore.CYAN + "\n===  Low Stock Alert === ")
+            low_stock = get_low_stock_items()
+            if low_stock:
+                print(Fore.RED + f"\n  ⚠️  {len(low_stock)} item(s) below reorder level:")
+                print(Fore.CYAN + "-"*41)
+                for item in low_stock:
+                    print(Fore.RED + f"  🚨 {item['item_name']} | Stock: {item['quantity']} | Reorder at: {item['reorder_level']}")
+                print(Fore.CYAN + "-"*41)
+            else:
+                print(Fore.GREEN + "\n  ✅ All items are sufficiently stocked.")
+
+        elif choice == "7":
             break
         else:
-            print(Fore.RED + "Invalid choice. Enter choice 1-6.")  
+            print(Fore.RED + "Invalid choice. Enter choice 1-7.")  
 
 
 def medical_records_menu():

@@ -27,3 +27,11 @@ def update_inventory(item_id, item_name, item_category, quantity, reorder_level,
 
 def delete_inventory(item_id):
     return execute_query("DELETE FROM inventory WHERE item_id=%s",(item_id,), commit=True)
+
+def get_low_stock_items():
+    return execute_query(
+        """ SELECT * FROM inventory
+        WHERE quantity <= reorder_level
+        ORDER BY quantity ASC""",
+        fetch="all"
+    ) or []
