@@ -42,3 +42,12 @@ def check_doctor_availability(doctor_id, appointment_date, appointment_time):
         fetch="one"
     )
     return result is None
+
+def cancel_appointment(appointment_id):
+    return execute_query(
+        """UPDATE appointments
+        SET status = 'cancelled'
+        WHERE appointment_id =%s
+        AND status = 'scheduled'""",
+        (appointment_id,), commit=True
+    )

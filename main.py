@@ -2,7 +2,7 @@ from colorama import init, Fore , Style
 from utils.patients import get_all_patients, get_patient_by_id, create_patient, update_patient, delete_patient
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
 from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill
-from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability
+from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from datetime import datetime
@@ -322,10 +322,11 @@ def appointment_menu():
         print(Fore.WHITE + " 3. Add Appointment")
         print(Fore.WHITE + " 4. Update Appointment")
         print(Fore.WHITE + " 5. Delete Appointment")
-        print(Fore.RED +   " 6. GO Back")
+        print(Fore.WHITE + " 6. cancel Appointment")
+        print(Fore.RED +   " 7. GO Back")
         print(Fore.CYAN + "-"*45)
 
-        choice = input(Fore.YELLOW + "Enter choice(1-6): ")
+        choice = input(Fore.YELLOW + "Enter choice(1-7): ")
 
         if choice == "1":
             appointments = get_all_appointments()
@@ -473,9 +474,39 @@ def appointment_menu():
             except Exception as e:
                 print(Fore.RED + f"\n  Error: {e}")            
         elif choice == "6":
+            print(Fore.CYAN + "\n=== Cancel Appointment ===")
+            try:
+                appointment_id = int(input(Fore.YELLOW + "  Appointment ID: "))
+                existing = get_appointment_by_id(appointment_id)
+                if not existing:
+                    print(Fore.RED + f"  Appointment ID: {appointment_id} does not exist.")
+                    continue
+                if existing['status'] != 'scheduled':
+                    print(Fore.RED + f"  cannot cancel - status is already '{existing['status']}'")
+                    continue
+                print(Fore.CYAN + f"  Appointment ID: {appointment_id}") 
+                print(Fore.WHITE + f"  Patient: {existing['patient_id']} | Doctor: {existing['doctor_id']} | {existing['appointment_date']} | {existing['appointment_time']}") 
+                confirm = input(Fore.RED + "\n  Confirm cancel? (yes/no): ")
+                if confirm.strip().lower() == 'yes':
+                    result = cancel_appointment(appointment_id)
+                    
+                    if result:
+                        print(Fore.GREEN + f"\n  ✅ Appointment {appointment_id} cancelled successfully.")
+                        print(result)
+                    else:
+                        print(Fore.RED + "  ❌ Failed to cancel appointment.")
+                elif confirm.lower() == 'no': 
+                    print(Fore.YELLOW + "  Cancelled.")      
+                else:
+                    print(Fore.RED + "  Enter the right choice yes/no.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")  
+        elif choice == "7":
             break
         else:
-            print(Fore.RED + "Invalid choice. Enter choice 1-6.")                   
+            print(Fore.RED + "Invalid choice. Enter choice 1-7.")                   
             
 def billing_menu():
     while True:
