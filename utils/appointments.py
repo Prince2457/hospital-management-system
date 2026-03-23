@@ -51,3 +51,16 @@ def cancel_appointment(appointment_id):
         AND status = 'scheduled'""",
         (appointment_id,), commit=True
     )
+
+def get_patient_appointments(patient_id):
+    return execute_query(
+        """SELECT a.appointment_id, a.appointment_date,
+        a.appointment_time, a.status, a.notes,
+        d.specialization, d.department
+        FROM appointments a
+        JOIN doctors d ON  a.doctor_id = d.doctor_id 
+        WHERE a.patient_id =%s
+        ORDER BY a.appointment_date DESC, a.appointment_time DESC""",
+        (patient_id,), 
+        fetch= "all"
+    ) or []  

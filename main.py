@@ -2,7 +2,7 @@ from colorama import init, Fore , Style
 from utils.patients import get_all_patients, get_patient_by_id, create_patient, update_patient, delete_patient
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
 from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill
-from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment
+from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment, get_patient_appointments
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from datetime import datetime
@@ -34,8 +34,9 @@ def patient_menu():
         print(Fore.WHITE +" 2. View patient by ID")
         print(Fore.WHITE +" 3. Add patient ")    
         print(Fore.WHITE +" 4. Update patient ") 
-        print(Fore.WHITE +" 5. Delete patient ")    
-        print(Fore.RED +  " 6. Go Back")    
+        print(Fore.WHITE +" 5. Delete patient ")  
+        print(Fore.WHITE +" 6. View patient appointments")    
+        print(Fore.RED +  " 7. Go Back")    
         print(Fore.CYAN + "-"*45)
 
         choice = input(Fore.YELLOW + "  Enter choice (1-6): ")
@@ -178,6 +179,27 @@ def patient_menu():
             except Exception as e:
                 print(Fore.RED + f" ❌ Error: {e}")    
         elif choice == "6":
+            print(Fore.CYAN + "===  Patients Appointments History ===")
+            try:
+                patient_id = int(input(Fore.YELLOW + "   Patient ID:  "))
+                existing = get_patient_by_id(patient_id)
+                if not existing:
+                    print(Fore.RED + f"  Patient ID : {patient_id} not found.")
+                    continue
+                appointments = get_patient_appointments(patient_id)
+                if appointments:
+                    print(Fore.CYAN + f"\n  {len(appointments)} appointment")
+                    print(Fore.CYAN + "-"*41)
+                    for a in appointments:
+                        print(Fore.YELLOW + f"  ID:{a['appointment_id']} | {a['appointment_date']} | {a['appointment_time']} | {a['status']} | {a['specialization']} | {a['department']}")
+                    print(Fore.CYAN + "-"*41)
+                else:
+                    print(Fore.RED + f"  No appointments found for {existing['full_name']}.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+        elif choice == "7":
             break
         else:
             print("  ❌ Invalid choice. Enter 1-6.")            
