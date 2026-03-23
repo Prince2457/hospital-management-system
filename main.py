@@ -1,7 +1,7 @@
 from colorama import init, Fore , Style
 from utils.patients import get_all_patients, get_patient_by_id, create_patient, update_patient, delete_patient
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
-from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill
+from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill, mark_bill_paid, get_outstanding_bill, get_financial_summary
 from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment, get_patient_appointments
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
@@ -345,10 +345,11 @@ def appointment_menu():
         print(Fore.WHITE + " 4. Update Appointment")
         print(Fore.WHITE + " 5. Delete Appointment")
         print(Fore.WHITE + " 6. cancel Appointment")
-        print(Fore.RED +   " 7. GO Back")
+        print(Fore.WHITE + " 7. Check doctor availability")
+        print(Fore.RED +   " 8. GO Back")
         print(Fore.CYAN + "-"*45)
 
-        choice = input(Fore.YELLOW + "Enter choice(1-7): ")
+        choice = input(Fore.YELLOW + "Enter choice(1-8): ")
 
         if choice == "1":
             appointments = get_all_appointments()
@@ -526,9 +527,27 @@ def appointment_menu():
             except Exception as e:
                 print(Fore.RED + f"  Error: {e}")  
         elif choice == "7":
+            print(Fore.CYAN + "\n=== Check Doctor Availability ===")
+            try:
+                doctor_id = int(input(Fore.YELLOW + "  Doctor ID: "))
+                date = input(Fore.YELLOW + "  Date (YYYY-MM-DD): ").strip()
+                datetime.strptime(date, "%Y-%m-%d")
+                time = input(Fore.YELLOW + "  Time (HH:MM): ").strip()
+                datetime.strptime(time, "%H:%M")
+
+                available = check_doctor_availability(doctor_id, date, time)
+                if available:
+                    print(Fore.GREEN + f"\n  ✅ Doctor ID {doctor_id} is AVAILABLE on {date} at {time}.")
+                else:
+                    print(Fore.RED + f"\n  ❌ Doctor ID {doctor_id} is NOT AVAILABLE on {date} at {time}.")
+            except ValueError:
+                print(Fore.RED + "  Invalid input. Check date and time format.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+        elif choice == "8":
             break
         else:
-            print(Fore.RED + "Invalid choice. Enter choice 1-7.")                   
+            print(Fore.RED + "Invalid choice. Enter choice 1-8.")                   
             
 def billing_menu():
     while True:
@@ -540,10 +559,13 @@ def billing_menu():
         print(Fore.WHITE + " 3. Add billing")
         print(Fore.WHITE + " 4. Update billing")
         print(Fore.WHITE + " 5. Delete billing")
-        print(Fore.RED +   " 6. GO Back")
+        print(Fore.RED +   " 6. Mark bill as paid")
+        print(Fore.RED +   " 7. View outstanding bills")
+        print(Fore.RED +   " 8. Financial summary")
+        print(Fore.RED +   " 9. GO Back")
         print(Fore.CYAN + "-"*45)
         
-        choice = input(Fore.YELLOW + "Enter choice(1-6): ")
+        choice = input(Fore.YELLOW + "Enter choice(1-9): ")
 
         if choice == "1":
             try:
@@ -680,6 +702,49 @@ def billing_menu():
             except Exception as e:
                 print(Fore.RED + f"  Error: {e}")      
         elif choice == "6":
+            print(Fore.CYAN + "===  Mark Bill As Paid ===")
+            try:
+                bill_id = int(input(Fore.YELLOW + "  Bill ID: "))
+                result = mark_bill_paid(bill_id)
+                if result == 'not found':
+                    print(Fore.RED+ f"  ❌ Bill ID {bill_id} not found.")
+                if result == 'already paid' :
+                    print(Fore.RED + f"  ❌ Bill ID {bill_id} is already paid.")
+                else:
+                    print(Fore.GREEN + f"  ✅ Bill ID {bill_id} marked as paid.")
+            except ValueError:   
+                print(Fore.RED + "  Invalid input. Enter a number.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")    
+        elif choice == "7":
+            print(Fore.CYAN + "\n === Outstanding Bills ===")
+            bills = get_outstanding_bill()
+            if bills :
+                print(Fore.GREEN + f"   {len(bills)} outstanding bill (s) ")
+                print(Fore.CYAN + "\n"+"-"*41)
+                for b in bills:
+                    print(Fore.YELLOW + f"Bill ID:{b['bill_id']} | Patient ID:{b['patient_id']}  | {b['bill_item']} | GHS{b['amount']} | {b['payment_status']}")
+                print(Fore.CYAN + "-"*41) 
+            else:
+                print(Fore.RED + "\n  No outstanding bill found.")
+        elif choice == "8":
+            print(Fore.CYAN +  "===  Financial Summary ===")
+            try:
+                summary = get_financial_summary()
+                if summary:
+                    print(Fore.CYAN + "\n" + "="*41)
+                    print(Fore.WHITE + f"  Total Bills:       {summary['total_bills']}")
+                    print(Fore.CYAN + "-"*41)
+                    print(Fore.GREEN + f"  ✅ Paid:    {summary['paid_count']} bills  →  GHS {summary['total_revenue'] or 0:.2f}")
+                    print(Fore.YELLOW + f"  ⏳ Pending: {summary['pending_count']} bills  →  GHS {summary['total_pending'] or 0:.2f}")
+                    print(Fore.RED + f"  🚨 Overdue: GHS {summary['total_overdue'] or 0:.2f}")
+                    print(Fore.CYAN + "-"*41)
+                    print(Fore.GREEN + f"  💰 Total Collected:   GHS {summary['total_revenue'] or 0:.2f}")
+                    print(Fore.RED + f"  ⚠️  Total Outstanding: GHS {(summary['total_pending'] or 0) + (summary['total_overdue'] or 0):.2f}")
+                    print(Fore.CYAN + "="*41)
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+        elif choice == "9":
             break
         else:
             print(Fore.RED + "Invalid choice. Enter choice 1-6.")  

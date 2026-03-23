@@ -28,3 +28,43 @@ def update_bill(bill_id, patient_id, appointment_id, bill_item, amount, payment_
 def delete_bill(bill_id):
     return execute_query("DELETE FROM billing WHERE bill_id=%s",(bill_id,), commit=True)
     
+def mark_bill_paid(bill_id):
+    existing = execute_query(
+        "SELECT * FROM  billing WHERE bill_id =%s",
+        (bill_id,), fetch="one"
+    )
+    if not existing:
+        return "not found"
+    if existing['payment_status'] == 'paid':
+        return "already paid"
+    return execute_query(
+        """UPDATE billing SET
+        payment_status = 'paid',
+        payment_date = CURDATE()
+        WHERE bill_id =%s""", (bill_id,), commit=True
+    )
+
+def get_outstanding_bill():
+    return execute_query(
+        """SELECT * FROM billing
+        WHERE payment_status IN ('pending', 'overdue')
+        ORDER BY created_at ASC""",fetch="all"
+    ) or []
+
+def get_financial_summary():
+    return execute_query(
+        """SELECT
+        COUNT(*) as total_bills,
+        SUM(CASE WHEN payment_status = 'paid'
+            THEN amount ELSE 0 END) as total_revenue,
+        SUM(CASE WHEN payment_status = 'pending'
+            THEN amount ELSE 0 END) as total_pending,
+        SUM(CASE WHEN payment_status = 'overdue'
+            THEN amount ELSE 0 END) as total_overdue,
+        COUNT(CASE WHEN payment_status = 'paid'
+            THEN 1 END) as paid_count,
+        COUNT(CASE WHEN payment_status = 'pendin'
+            THEN 1 END) as pending_count
+        FROM billing""", fetch="one"
+    )
+        
