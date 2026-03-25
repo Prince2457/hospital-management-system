@@ -5,7 +5,9 @@ from utils.billing import get_all_billing, get_billing_by_id, create_bill, updat
 from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment, get_patient_appointments, generate_bill_from_appointment
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
+from utils.auth import login, create_user
 from datetime import datetime
+import getpass
 init(autoreset=True)
 
 
@@ -22,8 +24,10 @@ def main_menu():
     print(Fore.WHITE + "  4. Billing")
     print(Fore.WHITE + "  5. Inventory")
     print(Fore.WHITE + "  6. Medical Records")
-    print(Fore.RED +   "  7. Quit")
+    print(Fore.RED +   "  7. Log Out")
     print(Fore.CYAN + "-"*45)
+
+
 
 def patient_menu():
     while True:
@@ -1078,24 +1082,98 @@ def medical_records_menu():
 
 while True:
     print_header()
-    main_menu()
-
-    choice = input(Fore.YELLOW + " Enter choice (1-7): ")
+    print(Fore.WHITE + "\n1. Register User")
+    print(Fore.WHITE + "2. Login User")
+    print(Fore.WHITE + "3. Quit")
+    
+    choice = input(Fore.YELLOW + "\n  Enter choice (1-3):")
 
     if choice == "1":
-        patient_menu()
+        print(Fore.GREEN + "===  Register User ===")
+        try:
+            username = input(Fore.YELLOW + "  Username: ").strip()
+            if len(username) < 3 :
+                print(Fore.RED + "  username must be at least 3 characters.")
+                continue
+
+            password = getpass.getpass(Fore.YELLOW + "  Password: ").strip()
+            if  len(password) < 6:
+                print(Fore.RED + "  password must be at least 6 characters.")
+                continue
+
+            role = input(Fore.YELLOW + "  Role: ").strip()
+            if role not in ['admin', 'medical_superintendent', 'hospital_administrator', 'doctor', 'nurse', 'lab_technician', 'cashier', 'accountant',
+                        'auditor', 'pharmacist', 'record_manager', 'storekeeper', 'procurement_officer'] :
+                print(Fore.RED + """ role must be (admin/medical superintendent/hospital administrator/doctor/nurse/lab technician/cashier/accountant/
+                        auditor/pharmacist/record_manager/storekeeper/procurement_officer).""")
+                continue  
+                
+            full_name = input(Fore.YELLOW + "  Full Name: ").title().strip()
+            if not full_name:
+                print(Fore.RED + "  enter full name.")
+                continue    
+                
+            email = input(Fore.YELLOW + "  Email: ").strip() or None
+            phone_input = input(Fore.YELLOW + "  Phone: ").strip()
+            if phone_input:
+                phone = phone_input
+                if len(phone) != 10 :
+                    print(Fore.RED + "  phone must be at least 10 characters.")
+                    continue
+            else:
+                phone = None
+
+            result = create_user(username, password, role, full_name, email, phone )
+
+            if result:
+                print(Fore.GREEN + f"  User Registered Successfully ID: {result}.")
+            else:
+                print(Fore.RED + "  Failed to register user.")       
+        except Exception as e:
+            print(Fore.RED + f"  Error: {e}")
+
     elif choice == "2":
-        doctor_menu()  
+        print(Fore.LIGHTGREEN_EX+ "=== LOGIN USER ===")
+        try:
+            login_username = input(Fore.LIGHTYELLOW_EX+ " Username: ")
+            if len(login_username) < 3:
+                print(Fore.RED + "  Username must be at least 3 characters" )
+                continue
+            login_password = getpass.getpass(Fore.LIGHTYELLOW_EX + " Password: ")    
+            if len(login_password) < 6:
+                print(Fore.RED + "  Password must be at least 6 characters")
+                continue      
+
+            user_login = login(login_username, login_password)
+            if user_login is not None :
+                while True:
+                    print(Fore.GREEN + f"\n  ✅ Welcome, {user_login['full_name']} | Role: {user_login['role'].upper()}")
+                    print(Fore.CYAN + "  " + "-"*41)
+                    main_menu()
+                    choice = input(Fore.YELLOW + " Enter choice (1-7): ")
+
+                    if choice == "1":
+                        patient_menu()
+                    elif choice == "2":
+                        doctor_menu()  
+                    elif choice == "3":
+                        appointment_menu()
+                    elif choice == "4":
+                        billing_menu()
+                    elif choice == "5":
+                        inventory_menu()
+                    elif choice == "6":
+                        medical_records_menu()                  
+                    elif choice == "7":
+                        break
+                    else :
+                        print(Fore.RED + "  coming soon....")
+            else:
+                print(Fore.RED + " Username or password dosen't exist.")
+        except Exception as e:
+            print(Fore.CYAN +f"  Error: {e}")        
     elif choice == "3":
-        appointment_menu()
-    elif choice == "4":
-        billing_menu()
-    elif choice == "5":
-        inventory_menu()
-    elif choice == "6":
-        medical_records_menu()                  
-    elif choice == "7":
         print(Fore.GREEN + "\n Goodbye! Stay Healty. 👋")
         break
-    else:
-        print(Fore.RED + " Coming soon...")
+    else: 
+        print(Fore.RED + "  enter the right choice (1-3).")
