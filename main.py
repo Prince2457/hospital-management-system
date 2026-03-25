@@ -1,8 +1,8 @@
 from colorama import init, Fore , Style
 from utils.patients import get_all_patients, get_patient_by_id, create_patient, update_patient, delete_patient
 from utils.doctors import get_all_doctors, get_doctor_by_id, create_doctor, update_doctor, delete_doctor
-from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill, mark_bill_paid, get_outstanding_bill, get_financial_summary
-from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment, get_patient_appointments
+from utils.billing import get_all_billing, get_billing_by_id, create_bill, update_bill, delete_bill, mark_bill_paid, get_outstanding_bill, get_financial_summary, flag_overdue_bills
+from utils.appointments import get_all_appointments, get_appointment_by_id, create_appointment, update_appointment, delete_appointment, check_doctor_availability,cancel_appointment, get_patient_appointments, generate_bill_from_appointment
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from datetime import datetime
@@ -559,13 +559,15 @@ def billing_menu():
         print(Fore.WHITE + " 3. Add billing")
         print(Fore.WHITE + " 4. Update billing")
         print(Fore.WHITE + " 5. Delete billing")
-        print(Fore.RED +   " 6. Mark bill as paid")
+        print(Fore.WHITE +   " 6. Mark bill as paid")
         print(Fore.RED +   " 7. View outstanding bills")
-        print(Fore.RED +   " 8. Financial summary")
-        print(Fore.RED +   " 9. GO Back")
+        print(Fore.YELLOW +   " 8. Financial summary")
+        print(Fore.WHITE +   " 9. Generate Bill From Appointment.")
+        print(Fore.WHITE +   " 10. Flag Overdue Bills.")
+        print(Fore.RED +   " 11. GO Back")
         print(Fore.CYAN + "-"*45)
         
-        choice = input(Fore.YELLOW + "Enter choice(1-9): ")
+        choice = input(Fore.YELLOW + "Enter choice(1-11): ")
 
         if choice == "1":
             try:
@@ -745,9 +747,33 @@ def billing_menu():
             except Exception as e:
                 print(Fore.RED + f"  Error: {e}")
         elif choice == "9":
+            try:
+                appointment_id = int(input(Fore.YELLOW + "  Appointment ID: "))
+                result = generate_bill_from_appointment(appointment_id)
+                if result == "not found":
+                    print(Fore.RED + f"  Appointment ID {appointment_id} not found")
+                elif result :
+                    print(Fore.GREEN + f" Bill Generated successfully.Bill ID: {result}") 
+                else:
+                    print(Fore.RED + "  Failed to generate bill.")
+            except ValueError:
+                print(Fore.RED + "  Failed to generate bill.")
+            except Exception as e:
+                print(Fore.RED + f"  Error:{e}")                   
+        elif choice == "10":
+            print(Fore.CYAN + "===  Flag Overdue Bills ===")
+            try:
+                result = flag_overdue_bills()
+                if result:
+                    print(Fore.GREEN + f"  🚨{result} bill(s) as overdue.")
+                else:
+                    print(Fore.RED +  "  ✅  No bills to flag.All pending bills are within 7 days.") 
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")          
+        elif choice == "11":
             break
         else:
-            print(Fore.RED + "Invalid choice. Enter choice 1-6.")  
+            print(Fore.RED + "Invalid choice. Enter choice (1-11)")  
 
 def inventory_menu():
     while True:

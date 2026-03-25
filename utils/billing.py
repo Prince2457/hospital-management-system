@@ -67,4 +67,12 @@ def get_financial_summary():
             THEN 1 END) as pending_count
         FROM billing""", fetch="one"
     )
-        
+
+def flag_overdue_bills():
+    return execute_query(
+        """UPDATE billing
+        SET payment_status = 'overdue' 
+        WHERE payment_status = 'pending'
+        AND DATEDIFF(CURDATE(), created_at) > 7""",
+        commit=True
+    )

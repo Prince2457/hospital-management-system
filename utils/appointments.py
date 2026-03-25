@@ -64,3 +64,19 @@ def get_patient_appointments(patient_id):
         (patient_id,), 
         fetch= "all"
     ) or []  
+
+def generate_bill_from_appointment(appointment_id):
+    appointment = execute_query(
+        """SELECT a.appointment_id, a.patient_id,
+        a.doctor_id, d.consultation_fee
+        FROM appointments a
+        JOIN doctors d ON a.doctor_id = d.doctor_id
+        WHERE appointment_id =%s""",(appointment_id,), fetch="one"
+    )    
+    if not appointment:
+        return "not found"
+    return execute_query(
+        """INSERT INTO BILLING 
+        (patient_id, appointment_id, bill_item, amount, payment_status)
+        VALUES (%s,%s,%s,%s,'pending')""",
+        (appointment['patient_id'],appointment['appointment_id'],'consultation_fee', appointment['consultation_fee']), commit=True)
