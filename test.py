@@ -1,16 +1,9 @@
-from utils.auth import create_user, login
+import os
 
-"""result = create_user(
-    username="nkansah_admin",
-    password="Admin123",
-    role="admin",
-    full_name="Prince Nkansah",
-    email="nkansahp476@gmail.com")
+if not os.path.exists("reports"):
+    os.makedirs("reports")
 
-print(f"user cretaed- ID: {result}")"""
+filepath = os.path.join("reports", "test_report.csv")
 
-user = login("nkansah_admin", "Admin123")
-if user:
-    print(f"LOGIN SUCCESFUL- Welcome {user['full_name']} | Role: {user['role']}")
-else:
-    print("failed to login")    
+with open(filepath, "w") as f:
+    f.write("hello")

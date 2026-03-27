@@ -1,0 +1,5 @@
+appointment_id,patient_name,specialization,department,appointment_date,appointment_time,status
+7,KWAME NKANSAH,Cardiology,Heart Center,2026-03-25,14:00:00,scheduled
+5,KWAME NKANSAH,Cardiology,Heart Center,2026-03-18,12:00:00,scheduled
+1,KWAME NKANSAH,Cardiology,Heart Center,2026-03-15,10:00:00,cancelled
+6,KWAME NKANSAH,Cardiology,Heart Center,2026-03-15,10:00:00,scheduled

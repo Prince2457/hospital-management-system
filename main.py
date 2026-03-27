@@ -6,6 +6,7 @@ from utils.appointments import get_all_appointments, get_appointment_by_id, crea
 from utils.inventory import get_all_inventory, get_inventory_by_id, create_inventory, update_inventory, delete_inventory, get_low_stock_items
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from utils.auth import login, create_user
+from utils.reports import get_appointment_report, get_financial_report, get_patient_report, export_to_csv
 from datetime import datetime
 import getpass
 init(autoreset=True)
@@ -24,8 +25,85 @@ def main_menu():
     print(Fore.WHITE + "  4. Billing")
     print(Fore.WHITE + "  5. Inventory")
     print(Fore.WHITE + "  6. Medical Records")
-    print(Fore.RED +   "  7. Log Out")
+    print(Fore.WHITE + "  7. Reports")
+    print(Fore.RED +   "  8. Log Out")
     print(Fore.CYAN + "-"*45)
+
+def reports_menu():
+    while True:
+        print(Fore.CYAN + "\n" + "="*45)
+        print(Fore.YELLOW + Style.BRIGHT + "     REPORTS MODULE")
+        print(Fore.CYAN + "\n" + "="*45)
+        print(Fore.WHITE + " 1. Financial Report")
+        print(Fore.WHITE + " 2. Appointment Report")
+        print(Fore.WHITE + " 3. Patient Report")
+        print(Fore.RED +   " 4. Go Back")
+        print(Fore.CYAN + "-"*45)
+
+        choice = input(Fore.YELLOW + "Enter choice(1-4): ")
+
+        if choice == "1":
+            print(Fore.CYAN + "\n=== Financial Report ===")
+            try:
+                data = get_financial_report()
+                if data:
+                    print(Fore.CYAN + f"\n  {len(data)} bill(s) found:")
+                    print(Fore.CYAN + "-"*41)
+                    for b in data:
+                        print(Fore.YELLOW + f"  {b['bill_id']} | {b['full_name']} | {b['bill_item']} | GHS {b['amount']} | {b['payment_status']}")
+                    print(Fore.CYAN + "-"*41)
+                    export = input(Fore.YELLOW + "\n  Export to CSV? (yes/no): ")
+                    if export.strip().lower() == 'yes':
+                        filepath = export_to_csv(data, "financial_report.csv")
+                        print(Fore.GREEN + f"  ✅ Exported to: {filepath}")
+                else:
+                    print(Fore.RED + "  No billing data found.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+
+        elif choice == "2":
+            print(Fore.CYAN + "\n=== Appointment Report ===")
+            try:
+                data = get_appointment_report()
+                if data:
+                    print(Fore.CYAN + f"\n  {len(data)} appointment(s) found:")
+                    print(Fore.CYAN + "-"*41)
+                    for a in data:
+                        print(Fore.YELLOW + f"  {a['appointment_id']} | {a['patient_name']} | {a['specialization']} | {a['appointment_date']} | {a['status']}")
+                    print(Fore.CYAN + "-"*41)
+                    export = input(Fore.YELLOW + "\n  Export to CSV? (yes/no): ")
+                    if export.strip().lower() == 'yes':
+                        filepath = export_to_csv(data, "appointment_report.csv")
+                        print(Fore.GREEN + f"  ✅ Exported to: {filepath}")
+                else:
+                    print(Fore.RED + "  No appointment data found.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+
+        elif choice == "3":
+            print(Fore.CYAN + "\n=== Patient Report ===")
+            try:
+                data = get_patient_report()
+                if data:
+                    print(Fore.CYAN + f"\n  {len(data)} patient(s) found:")
+                    print(Fore.CYAN + "-"*41)
+                    for p in data:
+                        print(Fore.YELLOW + f"  {p['patient_id']} | {p['full_name']} | {p['phone']} | {p['region']}")
+                    print(Fore.CYAN + "-"*41)
+                    export = input(Fore.YELLOW + "\n  Export to CSV? (yes/no): ")
+                    if export.strip().lower() == 'yes':
+                        filepath = export_to_csv(data, "patient_report.csv")
+                        print(Fore.GREEN + f"  ✅ Exported to: {filepath}")
+                else:
+                    print(Fore.RED + "  No patient data found.")
+            except Exception as e:
+                print(Fore.RED + f"  Error: {e}")
+
+        elif choice == "4":
+            break
+        else:
+            print(Fore.RED + "Invalid choice. Enter 1-4.")
+
 
 
 
@@ -1163,8 +1241,10 @@ while True:
                     elif choice == "5":
                         inventory_menu()
                     elif choice == "6":
-                        medical_records_menu()                  
+                        medical_records_menu()  
                     elif choice == "7":
+                        reports_menu()                    
+                    elif choice == "8":
                         break
                     else :
                         print(Fore.RED + "  coming soon....")
