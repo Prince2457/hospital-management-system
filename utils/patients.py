@@ -1,54 +1,16 @@
-from config.db import get_connection
-from config.db import close_connection
+from utils.db_helpers import execute_query
 
 def get_all_patients():
-    connection = get_connection()
-    
-    if not connection :
-        return []
-    cursor = connection.cursor(dictionary=True, buffered=True)
-
-    try:
-        cursor.execute("SELECT * FROM patients")
-        patients = cursor.fetchall()
-        return patients
-    
-    except Exception as e:
-        print(f"❌ Error fetching patients: {e}")
-        return []
-    finally:
-        close_connection(connection, cursor)  
+    return execute_query("SELECT * FROM patients", fetch="all") or []
 
 def get_patient_by_id(patient_id):
-    connection = get_connection()
-
-    if not connection:
-        return None
-
-    cursor = connection.cursor(dictionary=True)
-
-    try:
-        cursor.execute("SELECT * FROM patients WHERE patient_id =%s",(patient_id,))
-        patient = cursor.fetchone()
-        return patient
-    except Exception as e:
-        print(f"❌ Error fetching patient: {e}")
-        return None
-    finally:
-        close_connection(connection, cursor)
+    return execute_query("SELECT  * FROM patients WHERE patient_id =%s",(patient_id,), fetch="one")
 
 def create_patient(full_name, ghana_card_number, date_of_birth, gender,
                 phone, email, address, region, blood_group,
                 nhis_number, nhis_expiry, emergency_contact_name,
                 emergency_contact_phone, registered_by): 
-    connection = get_connection()
-    if not connection:
-        return False
-    
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute("""INSERT INTO patients (full_name, ghana_card_number, date_of_birth, gender,
+    return execute_query("""INSERT INTO patients (full_name, ghana_card_number, date_of_birth, gender,
                 phone, email, address, region, blood_group,
                 nhis_number, nhis_expiry, emergency_contact_name,
                 emergency_contact_phone, registered_by
@@ -56,32 +18,12 @@ def create_patient(full_name, ghana_card_number, date_of_birth, gender,
                 (full_name, ghana_card_number, date_of_birth, gender,
                 phone, email, address, region, blood_group,
                 nhis_number, nhis_expiry, emergency_contact_name,
-                emergency_contact_phone, registered_by))
-        
-        connection.commit()
-        new_patient_id = cursor.lastrowid
-        print(f"✅ Patient {full_name} created successfully!")
-        return new_patient_id
-    except Exception as e:
-        print(f"❌ Error creating patient: {e}")
-        connection.rollback()
-        return False
-    finally:
-        close_connection(connection, cursor)
+                emergency_contact_phone, registered_by), commit= True)
 
 def update_patient(patient_id, full_name, phone, email, address, region, 
                 blood_group, nhis_number, nhis_expiry, 
                 emergency_contact_name, emergency_contact_phone):
-    """Update an existing patient's details."""
-    connection = get_connection()
-
-    if not connection:
-        return False
-
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute("""
+    return execute_query("""
             UPDATE patients SET
                 full_name = %s,
                 phone = %s,
@@ -97,38 +39,8 @@ def update_patient(patient_id, full_name, phone, email, address, region,
         """, (full_name, phone, email, address, region,
             blood_group, nhis_number, nhis_expiry,
             emergency_contact_name, emergency_contact_phone,
-            patient_id))
+            patient_id), commit=True)
 
-        connection.commit()
-        print(f"✅ Patient {patient_id} updated successfully!")
-        return True
-    except Exception as e:
-        print(f"❌ Error updating patient: {e}")
-        connection.rollback()
-        return False 
-    finally:
-        close_connection(connection, cursor)     
 
 def delete_patient(patient_id):
-    connection = get_connection()
-    if not connection:
-        return False
-    
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute("DELETE FROM patients WHERE patient_id = %s",(patient_id,))
-
-        connection.commit()
-        if cursor.rowcount == 0:
-            print(f"❌ Patient {patient_id} not found.")
-            return False
-
-        print(f"✅ Patient {patient_id} deleted successfully!")
-        return True
-    except Exception as e:
-        print(f"❌ Error deleting patient: {e}")
-        connection.rollback()
-        return False
-    finally:
-        close_connection(connection, cursor)
+    return execute_query("DELETE FROM patients WHERE patient_id = %s",(patient_id,), commit=True) 

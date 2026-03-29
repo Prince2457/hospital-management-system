@@ -35,20 +35,24 @@ A full-featured Hospital Management System built with Python and MySQL, designed
    git clone https://github.com/Prince2457/hospital-management-system.git
    cd hospital-management-system
 
-2. Install dependencies
-   pip install mysql-connector-python python-dotenv bcrypt colorama
+2. Create and activate virtual environment
+   python -m venv venv
+   venv\Scripts\activate
 
-3. Create your .env file
+3. Install dependencies
+   pip install -r requirements.txt
+
+4. Create your .env file
    DB_HOST=localhost
    DB_USER=your_mysql_username
    DB_PASSWORD=your_mysql_password
    DB_NAME=hospital_db
 
-4. Set up the database
+5. Set up the database
    - Create a MySQL database called hospital_db
    - Run the schema SQL file to create all tables
 
-5. Run the application
+6. Run the application
    python main.py
 
 ---

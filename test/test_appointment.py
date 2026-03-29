@@ -12,3 +12,4 @@ def test_doctor_availability():
     result = check_doctor_availability(1, "2026-04-1", "9:00:00")
     assert result == True
 
+vmf
