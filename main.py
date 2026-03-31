@@ -9,13 +9,15 @@ from utils.auth import login, create_user
 from utils.reports import get_appointment_report, get_financial_report, get_patient_report, export_to_csv
 from datetime import datetime
 import getpass
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
 init(autoreset=True)
 
-
+console = Console()
 def print_header():
-    print(Fore.CYAN + Style.BRIGHT + "="*45)
-    print(Fore.CYAN + Style.BRIGHT + "       HOSPITAL MANAGEMENT SYSTEM")
-    print(Fore.CYAN + Style.BRIGHT + "="*45)
+    console.print(Panel(Text("HOSPITAL    MANAGEMENT    SYSTEM", justify="center" , style="bold cyan"), border_style="cyan", padding=(1,2), width=50))
 
 def main_menu():
     print(Fore.YELLOW + "\n MAIN MENU")
@@ -126,13 +128,23 @@ def patient_menu():
         if choice == "1":
             patients = get_all_patients()
             if patients:
-                print(Fore.CYAN + f"{len(patients)} patient(s) found")
-                print(Fore.CYAN + "-"*41)
+                table = Table(title=f"Patients ({len(patients)} found)", border_style="cyan")
+                table.add_column("ID",style="cyan", justify="center")
+                table.add_column("Name",style="white")
+                table.add_column("Phone", style="green")
+                table.add_column("Blood Group", style="yellow", justify="center")
+                table.add_column("Region", style="blue")
                 for p in patients:
-                    print(Fore.YELLOW + f" Patient ID ({p['patient_id']}) | {p['full_name']} | {p['phone']} | {p['blood_group']} | {p['region']}")
-                print(Fore.CYAN + "-"*41)
+                    table.add_row(
+                    str(p['patient_id']),
+                    p['full_name'],
+                    p['phone'],
+                    str(p['blood_group'] or 'N/A'),
+                    p['region']
+            )
+                console.print(table)
             else:
-                print(Fore.RED +"  ❌ No patient found ")        
+                console.print("[red]No patients found.[/red]")        
         elif choice == "2":
             patient_id = input("  Patient ID: ")
             try:
@@ -302,19 +314,29 @@ def doctor_menu():
         choice = input(Fore.YELLOW + "Enter choice (1-6): ")
 
         if choice == "1":
-            doctors = get_all_doctors()
-            if doctors:
-                print(Fore.CYAN + f"\n {len(doctors)} doctor(s) found:")
-                print(Fore.CYAN + "-"*41)
-                for d in doctors:
-                    print(Fore.YELLOW + f"  Doctor ID: {d['doctor_id']} | {d['specialization']} | {d['department']} | {d['available_days']} | {d['consultation_fee']}")
-                print(Fore.CYAN + "-"*41)
-            else:
-                print(Fore.RED + "  ❌ No doctor found.")        
+            try:
+                doctors = get_all_doctors()
+                if doctors:
+                    table = Table(title=f"Doctor {len(doctors)} found",border_style="cyan")
+                    table.add_column("ID", justify="center", style="white")
+                    table.add_column("Specialization", style="yellow")
+                    table.add_column("Available Days", style="white")
+                    table.add_column("Consultation Fee (GHS)",style="green", justify="center")
+                    for d in doctors:
+                        table.add_row(
+                            str(d['doctor_id']),
+                            d['specialization'] ,
+                            str(d['available_days'] or 'N/A'),
+                            f"{float(d['consultation_fee'] or 0):.2f}")
+                    console.print(table)
+                else:
+                    console.print("[red]No doctor found.[red/]")  
+            except Exception as e:
+                console.print(f"[red]Error: {e}[red/]")              
 
         elif choice == "2":
             print(Fore.CYAN + "\n=== Fetch Doctor By ID ===")
-            doctor_id = input(Fore.YELLOW + "  Patient ID: ")
+            doctor_id = input(Text("Patient ID: ",style="bold cyan"))
             try:
                 doctor_id = int(doctor_id)
                 doctor = get_doctor_by_id(doctor_id)
@@ -434,15 +456,33 @@ def appointment_menu():
         choice = input(Fore.YELLOW + "Enter choice(1-8): ")
 
         if choice == "1":
-            appointments = get_all_appointments()
-            if appointments:
-                print(Fore.CYAN + f"{len(appointments)} appointment(s) found")
-                print(Fore.CYAN + "-"*41)
-                for a in appointments:
-                    print(Fore.YELLOW + f"Appointment ID:{a['appointment_id']} | Patient ID:{a['patient_id']} | Doctor ID:{a['doctor_id']} | {a['appointment_date']} | {a['appointment_time']} | {a['status']}")
-                print(Fore.CYAN + "-"*41)   
-            else:
-                print(Fore.RED + "  ❌ No Appointment Found")     
+            try:
+                appointments = get_all_appointments()
+                if appointments:
+                    table = Table(title=f"Apponitments({len(appointments)}) found(s) ", title_justify="center", title_style="bold cyan")
+                    table.add_column("ID", justify="center", header_style="bold cyan")
+                    table.add_column("Patient ID", justify="center",header_style="bold cyan")
+                    table.add_column("Doctor ID", justify="center",header_style="bold cyan")
+                    table.add_column("Appointment Date", justify="center",header_style="bold cyan")
+                    table.add_column("Appointment Time", justify="center",header_style="bold cyan")
+                    table.add_column("Appointment Status", justify="center",header_style="bold cyan")
+                    for a in appointments:
+                        table.add_row(
+                            str(a['appointment_id']),
+                            str(a['patient_id']),
+                            str(a['doctor_id']),
+                            str(a['appointment_date']),
+                            str(a['appointment_time']),
+                            a['status'], style="red" if a['status'] == "cancelled" else "yellow" if a['status'] == "scheduled" else "green"
+                        )   
+                        
+                    console.print(table)    
+                else:
+                    console.print("[red]No appointment found.[red/]")    
+            except Exception as e:
+                console.print(f"[red]Error: {e}[red/]")        
+                
+            
         elif choice == "2":
             print(Fore.GREEN + "\n=== Fetch Appointment By ID ===")
             appointment_id = input(Fore.YELLOW + "  Patient ID: ")
@@ -655,15 +695,27 @@ def billing_menu():
             try:
                 billing = get_all_billing()
                 if billing:
-                    print(Fore.CYAN + f"{len(billing)} billing found")
-                    print(Fore.CYAN + "-"*41)
+                    table = Table(title=f"Billing ({len(billing)} found)",title_justify="center", title_style="bold cyan")
+                    table.add_column("ID", justify="center")
+                    table.add_column("Patient ID", justify="center")
+                    table.add_column("Appointment ID", justify="center")
+                    table.add_column("Bill Item", justify="center")
+                    table.add_column("Amount", justify="center")
+                    table.add_column("Payment Status", justify="center")
                     for b in billing:
-                        print(Fore.YELLOW + f"Bill ID:{b['bill_id']} | Patient ID:{b['patient_id']} | Appointment ID:{b['appointment_id']} | {b['bill_item']} | {b['amount']} | {b['payment_status']}")
-                    print(Fore.CYAN + "-"*41)
+                        table.add_row(
+                        str(b['bill_id']),
+                        str(b['patient_id']),
+                        str(b['appointment_id']),    
+                        b['bill_item'],    
+                        f"{float(b['amount']):.2f}",    
+                        b['payment_status'], style="red" if b['payment_status'] == "overdue" else "yellow" if b['payment_status'] =="pending" else "green"   
+                        )
+                    console.print(table)
                 else:
-                    print(Fore.RED + "No Billing Found")
+                    console.print("[red]No bill found[red/]")
             except Exception as e:
-                print(Fore.RED + f"   Error: {e}")                
+                console.print(f"[red]Error: {e}red/]")     
         elif choice == "2":
             print(Fore.GREEN + "\n=== Fetch Billing By ID ===")
             bill_id = input(Fore.YELLOW + "  Bill ID: ")
@@ -811,23 +863,41 @@ def billing_menu():
                 print(Fore.CYAN + "-"*41) 
             else:
                 print(Fore.RED + "\n  No outstanding bill found.")
+      
         elif choice == "8":
-            print(Fore.CYAN +  "===  Financial Summary ===")
+            print(Fore.CYAN + "\n=== Financial Summary ===")
             try:
                 summary = get_financial_summary()
                 if summary:
-                    print(Fore.CYAN + "\n" + "="*41)
-                    print(Fore.WHITE + f"  Total Bills:       {summary['total_bills']}")
-                    print(Fore.CYAN + "-"*41)
-                    print(Fore.GREEN + f"  ✅ Paid:    {summary['paid_count']} bills  →  GHS {summary['total_revenue'] or 0:.2f}")
-                    print(Fore.YELLOW + f"  ⏳ Pending: {summary['pending_count']} bills  →  GHS {summary['total_pending'] or 0:.2f}")
-                    print(Fore.RED + f"  🚨 Overdue: GHS {summary['total_overdue'] or 0:.2f}")
-                    print(Fore.CYAN + "-"*41)
-                    print(Fore.GREEN + f"  💰 Total Collected:   GHS {summary['total_revenue'] or 0:.2f}")
-                    print(Fore.RED + f"  ⚠️  Total Outstanding: GHS {(summary['total_pending'] or 0) + (summary['total_overdue'] or 0):.2f}")
-                    print(Fore.CYAN + "="*41)
+                    table = Table(title="Financial Summary", border_style="green")
+                    table.add_column("Category", style="white")
+                    table.add_column("Count", style="cyan", justify="center")
+                    table.add_column("Amount (GHS)", style="green", justify="right")
+
+                    table.add_row(
+                        "✅ Paid",
+                        str(summary['paid_count']),
+                        f"{summary['total_revenue'] or 0:.2f}"
+                    )
+                    table.add_row(
+                        "⏳ Pending",
+                        str(summary['pending_count']),
+                        f"{summary['total_pending'] or 0:.2f}"
+                    )
+                    table.add_row(
+                        "🚨 Overdue",
+                        "-",
+                        f"{summary['total_overdue'] or 0:.2f}"
+                    )
+                    table.add_section()
+                    table.add_row(
+                        "[bold]Total Bills[/bold]",
+                        str(summary['total_bills']),
+                        f"[bold]{(summary['total_revenue'] or 0) + (summary['total_pending'] or 0) + (summary['total_overdue'] or 0):.2f}[/bold]"
+                    )
+                    console.print(table)
             except Exception as e:
-                print(Fore.RED + f"  Error: {e}")
+                console.print(f"[red]Error: {e}[/red]")
         elif choice == "9":
             try:
                 appointment_id = int(input(Fore.YELLOW + "  Appointment ID: "))
@@ -874,15 +944,30 @@ def inventory_menu():
         choice = input(Fore.YELLOW + "Enter choice(1-7): ")
         
         if choice == "1":
-            inventory = get_all_inventory()
-            if inventory:
-                print(Fore.CYAN + f"{len(inventory)} inventory found")
-                print(Fore.CYAN + "-"*41)
-                for i in inventory:
-                    print(Fore.YELLOW + f"Item ID:{i['item_id']} | {i['item_name']} | {i['item_category']} | {i['quantity']} | {i['reorder_level']} | {i['item_cost']}")
-                print(Fore.CYAN+ "-"*41)
-            else:
-                print(Fore.RED + "No inventory Found")        
+            try:
+                inventory = get_all_inventory()
+                if inventory:
+                    table = Table(title=f"Inventory({len(inventory)})", title_style="bold cyan", title_justify="center")
+                    table.add_column("ID", justify="center")
+                    table.add_column("Item Name", justify="center")
+                    table.add_column("Item Category", justify="center")
+                    table.add_column("Quantity", justify="center")
+                    table.add_column("Reorder Level", justify="center")
+                    table.add_column("Item Cost", justify="center")
+                    for i in inventory:
+                        table.add_row(
+                            str(i['item_id']),
+                            str(i['item_name']),
+                            str(i['item_category']),
+                            str(i['quantity']),
+                            str(i['reorder_level']),
+                            f"{float(i['item_cost']):.2f}"
+                        )
+                    console.print(table)    
+                else:
+                    console.print("[red]No inventory Found.[red/]")   
+            except Exception as e:
+                console.print(f"[red]Error: {e}.[red/]")            
         elif choice == "2":
             item_id = input("  Item ID: ")
             try:
@@ -1034,15 +1119,31 @@ def medical_records_menu():
             try:
                 medical_records = get_all_medical_records()
                 if medical_records:
-                    print(Fore.GREEN + f"  {len(medical_records)}  medical record(s) found.")
-                    print(Fore.CYAN + "\n"+"-"*41)
+                    table = Table(title=f"Medical Records ({len(medical_records)}) found", title_style="bold cyan", title_justify="center")
+                    table.add_column("ID", style="bold cyan", justify="center")
+                    table.add_column("Patient ID", style="bold cyan", justify="center")
+                    table.add_column("Doctor ID", style="bold cyan", justify="center")
+                    table.add_column("Appointment ID", style="bold cyan", justify="center")
+                    table.add_column("Diagnosis", style="yellow", justify="center")
+                    table.add_column("Treatment", style="green", justify="center")
+                    table.add_column("Lab Test", style="bold cyan", justify="center")
+                    table.add_column("Notes", style="white", justify="center")
                     for m_r in medical_records:
-                        print(Fore.YELLOW +  f"  Record ID: {m_r['record_id']} | {m_r['patient_id']} | {m_r['doctor_id']} | {m_r['appointment_id']} | {m_r['diagnosis']} | {m_r['treatment']} | {m_r['lab_tests']} | {m_r['notes']} ")
-                    print(Fore.CYAN + "-"*41)    
+                        table.add_row(
+                            str(m_r['record_id']),
+                            str(m_r['doctor_id']),
+                            str(m_r['patient_id']),
+                            str(m_r['appointment_id']),
+                            str(m_r['diagnosis']),
+                            str(m_r['treatment']),
+                            str(m_r['lab_tests']),
+                            str(m_r['notes'] or 'N/A')
+                        )
+                    console.print(table)    
                 else:
-                    print(Fore.RED + "  No Medical Record  found")
+                    console.print("[red] No Medical Record  found.red/]")
             except Exception as e:
-                print(Fore.RED + f"  Error: {e}") 
+                console.print(f"[red]Error: {e}.[red/]") 
         elif choice == "2":
             print(Fore.GREEN + "\n === Fetch Medical Record By ID ===")
             try:
@@ -1224,8 +1325,8 @@ while True:
 
             user_login = login(login_username, login_password)
             if user_login is not None :
+                print(Fore.GREEN + f"\n  ✅ Welcome, {user_login['full_name']} | Role: {user_login['role'].upper()}")
                 while True:
-                    print(Fore.GREEN + f"\n  ✅ Welcome, {user_login['full_name']} | Role: {user_login['role'].upper()}")
                     print(Fore.CYAN + "  " + "-"*41)
                     main_menu()
                     choice = input(Fore.YELLOW + " Enter choice (1-7): ")
