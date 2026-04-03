@@ -7,6 +7,7 @@ from utils.inventory import get_all_inventory, get_inventory_by_id, create_inven
 from utils.medical_records import get_all_medical_records, get_medical_record_by_id, create_record, update_medical_record, delete_medical_record
 from utils.auth import login, create_user
 from utils.reports import get_appointment_report, get_financial_report, get_patient_report, export_to_csv
+from utils.menu_helpers import confirm_delete
 from datetime import datetime
 import getpass
 from rich.console import Console
@@ -254,20 +255,14 @@ def patient_menu():
                 if not existing_1:
                     print(Fore.RED + f"  ❌Patient ID {patient_id_1} not found.")
                     continue
-                print(Fore.BLUE + f" Patient ID: {existing_1['patient_id']} | {existing_1['full_name']} | {existing_1['phone']} | {existing_1['blood_group']} | {existing_1['region']}")
-                print(Fore.RED + """                    Are Sure You  
-                    To Do Delete 
-                    (YES/NO)""")
-                
-                confirm = input( Fore.RED + "  Enter 'Yes' to  confirm .Enter 'No' to cancel. : ")
-
-                if confirm.strip().lower() == "yes":
+                details = Fore.BLUE + f" Patient ID: {existing_1['patient_id']} | {existing_1['full_name']} | {existing_1['phone']} | {existing_1['blood_group']} | {existing_1['region']}"
+                if confirm_delete(details):
                     delete_patient(patient_id_1)
                     no_of_patients = len(get_all_patients())
                     print(Fore.CYAN + "\n"+"-"*41)
                     print(Fore.BLUE +f"  Total Number Of Patients left: {no_of_patients}")
                     print(Fore.CYAN + "-"*41)
-                elif confirm.strip().lower() == "no":
+                else:
                     print(Fore.YELLOW + "  ❌ Cancelled.")   
             except ValueError:
                 print(Fore.RED + "  ❌ Invalid input. Please enter a number")
@@ -414,21 +409,15 @@ def doctor_menu():
                 if not existing_1:
                     print(Fore.RED + f"  ❌ Doctor ID: {doctor_id_1} not found")
                     continue
-                print(Fore.BLUE + f" {existing_1['doctor_id']} | {existing_1['specialization']} | {existing_1['department']} | {existing_1['available_days']} | {existing_1['consultation_fee']}")
-                print(Fore.RED + """                Are you sure 
-                    You Want To Delete
-                    (YES?NO)""") 
-                
-                confirm = input(Fore.RED + "  Enter 'Yes' to confirm . Enter 'No' to cancel: ")
-
-                if confirm.strip().lower() == 'yes':
+                details = Fore.BLUE + f" {existing_1['doctor_id']} | {existing_1['specialization']} | {existing_1['department']} | {existing_1['available_days']} | {existing_1['consultation_fee']}"
+                if confirm_delete(details):
                     delete_doctor(doctor_id_1)
                     no_of_doctors = len(get_all_doctors())
                     print(Fore.GREEN + f"  Doctor ID:{doctor_id_1} successfully deleted.")
                     print(Fore.CYAN + "\n"+"-"*41)
                     print(Fore.BLUE + f"  Total number of doctors left: {no_of_doctors}")
                     print(Fore.CYAN + "\n"+"-"*41)
-                elif confirm.strip().lower() == 'no':
+                else:
                     print(Fore.YELLOW + "  ❌ cancelled")
             except ValueError:
                 print(Fore.RED + "  ❌ Invalid input. Enter a number:")
@@ -581,7 +570,6 @@ def appointment_menu():
 
                 result_a_1 = update_appointment(appointment_id_1, patient_id_a, doctor_id_1,appointment_date_1,
                             appointment_time_1, status_1, notes_1)  
-                print(f"DEBUG result: {result_a_1}")   
                 if result_a_1 is not None:
                     print(Fore.GREEN + f"\n  Appointment ID: {appointment_id_1} updated successfully.")
                 else:
@@ -599,21 +587,15 @@ def appointment_menu():
                 if not existing_1:
                     print(Fore.RED + f"\n  Appointment ID: {appointment_id_2} not found.")
                     continue
-                print(Fore.BLUE + f"Appointment ID:{existing_1['appointment_id']} | Patient ID:{existing_1['patient_id']} | Doctor ID:{existing_1['doctor_id']} | {existing_1['appointment_date']} | {existing_1['appointment_time']} | {existing_1['status']}")
-                print(Fore.RED + """                    Are You Sure
-                        You Want To Delete 
-                        (YES/NO)""")
-                
-                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
-
-                if confirm.strip().lower() == 'yes':
+                details = Fore.BLUE + f"Appointment ID:{existing_1['appointment_id']} | Patient ID:{existing_1['patient_id']} | Doctor ID:{existing_1['doctor_id']} | {existing_1['appointment_date']} | {existing_1['appointment_time']} | {existing_1['status']}"
+                if confirm_delete(details):
                     delete_appointment(appointment_id_2)
                     no_of_appointments = len(get_all_appointments())
                     print(Fore.GREEN + f"\n  Appointment ID: {appointment_id_2} deleted sucessfully.")
                     print(Fore.CYAN + "\n" +"-"*41)
                     print(Fore.WHITE + f"\n  Total number of appointments left: {no_of_appointments}")
                     print(Fore.CYAN + "-"*41)
-                elif confirm.strip().lower() == 'no':
+                else:
                     print(Fore.YELLOW + "  cancelled.")    
             except ValueError:
                 print(Fore.RED + "\n  Invalid input.Enter a number.")
@@ -818,21 +800,15 @@ def billing_menu():
                 if not existing:
                     print(Fore.RED + f"  Bill ID: {bill_id} not found.")
                     continue
-                print(Fore.BLUE + f"Bill ID:{existing['bill_id']} | Patient ID:{existing['patient_id']} | Appointment ID:{existing['appointment_id']} | {existing['bill_item']} | {existing['amount']} | {existing['payment_status']}")
-                print(Fore.RED + """                    Are You Sure
-                        You Want To Delete 
-                        (YES/NO)""")
-                
-                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
-
-                if confirm.strip().lower() == 'yes':
+                details = Fore.BLUE + f"Bill ID:{existing['bill_id']} | Patient ID:{existing['patient_id']} | Appointment ID:{existing['appointment_id']} | {existing['bill_item']} | {existing['amount']} | {existing['payment_status']}"
+                if confirm_delete(details):
                     delete_bill(bill_id)
                     no_of_billings = len(get_all_billing())
                     print(Fore.GREEN + f"\n  Bill ID: {bill_id} deleted successfully.")
                     print(Fore.CYAN + "\n" +"-"*41)
                     print(Fore.WHITE + f"\n  Total number of Billings left: {no_of_billings}")
                     print(Fore.CYAN + "-"*41)
-                elif confirm.strip().lower() == 'no':
+                else:
                     print(Fore.YELLOW + "  cancelled.")    
             except ValueError:
                 print(Fore.RED + " Invalid input.Enter a number.")
@@ -1062,21 +1038,15 @@ def inventory_menu():
                 if not existing:
                     print(Fore.RED + f"  Item ID: {item_id} not found.")
                     continue
-                print(Fore.BLUE + f"Item ID:{existing['item_id']} | {existing['item_name']} | {existing['item_category']} | {existing['quantity']} | {existing['reorder_level']} | {existing['item_cost']}")
-                print(Fore.RED + """                    Are You Sure
-                        You Want To Delete 
-                        (YES/NO)""")
-
-                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
-
-                if confirm.strip().lower() == 'yes':
+                details = Fore.BLUE + f"Item ID:{existing['item_id']} | {existing['item_name']} | {existing['item_category']} | {existing['quantity']} | {existing['reorder_level']} | {existing['item_cost']}"
+                if confirm_delete(details):
                     delete_inventory(item_id)
                     no_of_inventory = len(get_all_inventory())
                     print(Fore.GREEN + f"\n  Item ID: {item_id} deleted successfully.")
                     print(Fore.CYAN + "\n" +"-"*41)
                     print(Fore.WHITE + f"\n  Total number of Inventory left: {no_of_inventory}")
                     print(Fore.CYAN + "-"*41)
-                elif confirm.strip().lower() == 'no':
+                else:
                     print(Fore.YELLOW + "  cancelled.")    
             except ValueError:
                 print(Fore.RED + " Invalid input.Enter a number.")
@@ -1235,21 +1205,15 @@ def medical_records_menu():
                     print(Fore.RED + f"  Record ID: {record_id} not found.")
                     continue
                 print(Fore.GREEN + f"  Record ID: {record_id} found.")
-                print(Fore.YELLOW +  f"  Record ID: {existing['record_id']} | {existing['patient_id']} | {existing['doctor_id']} | {existing['appointment_id']} | {existing['diagnosis']} | {existing['treatment']} | {existing['lab_tests']} | {existing['notes']} ")
-                print(Fore.RED + """                    Are You Sure
-                        You Want To Delete 
-                        (YES/NO)""")
-
-                confirm = input(Fore.RED + " Enter 'Yes' to confirm.Enter 'No' to cancel: ")
-
-                if confirm.strip().lower() == 'yes':
+                details = Fore.YELLOW +  f"  Record ID: {existing['record_id']} | {existing['patient_id']} | {existing['doctor_id']} | {existing['appointment_id']} | {existing['diagnosis']} | {existing['treatment']} | {existing['lab_tests']} | {existing['notes']} "
+                if confirm_delete(details):
                     delete_medical_record(record_id)
                     no_of_records = len(get_all_medical_records())
                     print(Fore.GREEN + f"\n  Item ID: {record_id} deleted successfully.")
                     print(Fore.CYAN + "\n" +"-"*41)
                     print(Fore.WHITE + f"\n  Total number of Medical Records left: {no_of_records}")
                     print(Fore.CYAN + "-"*41)
-                elif confirm.strip().lower() == 'no':
+                else:
                     print(Fore.YELLOW + "  cancelled.")    
             except ValueError:
                 print(Fore.RED + " Invalid input.Enter a number.")

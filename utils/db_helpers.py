@@ -1,6 +1,7 @@
 from config.db import get_connection, close_connection
 
 def execute_query(query, params=None, fetch='all', commit=False):
+    """Execute a  query"""
     connection = get_connection()
     if not connection:
         return None

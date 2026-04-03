@@ -26,6 +26,7 @@ def create_user(username, password, role, full_name, email=None, phone=None):
     )
 
 def login (username, password):
+    """Login by feching user from database and verifying passwords."""
     user = execute_query(
         "SELECT * FROM users WHERE username = %s AND is_active = 1",(username,),fetch="one"
     )

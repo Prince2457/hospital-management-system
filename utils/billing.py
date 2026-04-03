@@ -1,17 +1,21 @@
 from utils.db_helpers import execute_query
 def get_all_billing():
+    """Fetch all billing fom database. Return a list of dictionary."""
     return execute_query("SELECT * FROM billing", fetch="all") or []
 
 def get_billing_by_id(bill_id):
+    """Fetch billing from the database using bill_id ."""
     return execute_query("SELECT * FROM billing WHERE bill_id =%s",(bill_id,), fetch="one")
 
 def create_bill(patient_id, appointment_id, bill_item, amount, payment_status, payment_date):
+    """Insert into database to create a bill."""
     return execute_query("""INSERT INTO billing (patient_id, appointment_id, bill_item, amount, payment_status, payment_date) 
                     VALUES(%s,%s,%s,%s,%s,%s)""",
                     (patient_id, appointment_id, bill_item, amount, payment_status, payment_date),
                     commit=True)
 
 def update_bill(bill_id, patient_id, appointment_id, bill_item, amount, payment_status, payment_date):
+    """Update biiling set in database."""
     return execute_query(
         """UPDATE billing SET
         patient_id=%s,
@@ -26,9 +30,11 @@ def update_bill(bill_id, patient_id, appointment_id, bill_item, amount, payment_
     )
 
 def delete_bill(bill_id):
+    """Delete bill from database ."""
     return execute_query("DELETE FROM billing WHERE bill_id=%s",(bill_id,), commit=True)
     
 def mark_bill_paid(bill_id):
+    """Fectch bill from database and change the the payment_status to paid."""
     existing = execute_query(
         "SELECT * FROM  billing WHERE bill_id =%s",
         (bill_id,), fetch="one"
@@ -45,6 +51,7 @@ def mark_bill_paid(bill_id):
     )
 
 def get_outstanding_bill():
+    """Fetch all bills from database where the payment_status is either pending or overdue."""
     return execute_query(
         """SELECT * FROM billing
         WHERE payment_status IN ('pending', 'overdue')
@@ -52,6 +59,7 @@ def get_outstanding_bill():
     ) or []
 
 def get_financial_summary():
+    """Make a financial summary from our database."""
     return execute_query(
         """SELECT
         COUNT(*) as total_bills,
@@ -63,12 +71,13 @@ def get_financial_summary():
             THEN amount ELSE 0 END) as total_overdue,
         COUNT(CASE WHEN payment_status = 'paid'
             THEN 1 END) as paid_count,
-        COUNT(CASE WHEN payment_status = 'pendin'
+        COUNT(CASE WHEN payment_status = 'pending'
             THEN 1 END) as pending_count
         FROM billing""", fetch="one"
     )
 
 def flag_overdue_bills():
+    """Flag bill from pending to ovredue when the when date is more then & days."""
     return execute_query(
         """UPDATE billing
         SET payment_status = 'overdue' 
